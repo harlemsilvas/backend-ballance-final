@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+ESTUDO.md
+
+# Configurações e credenciais locais
+.vscode/
+.aws/
+.codex/
+.agents/
