@@ -13,3 +13,8 @@ Validação final: 203 testes (110 unidade + 93 integração), 799 assertions, z
 Containers de validação ballance-delivery-check encerrados, volume persistente e arquivo privado /tmp/ballance-delivery.env preservados para reprodução. Ambiente original backend-ballance preservado. Não houve DDL financeiro em public, reset ou remoção de volumes. O registro acima corresponde à validação anterior à publicação inicial; publicação da main foi autorizada na etapa seguinte. Nenhum deploy solicitado.
 
 Limites: SQS local não promete persistência entre recriações; downstream deve deduplicar eventos; IdP real adiado; custo dos triggers não medido. Detalhes em docs/DELIVERY.md. Preservar arquivos de estudo e configurações locais.
+
+
+## Documentação de entrega
+
+LICENSE (MIT) e SECURITY.md adicionados; README esclarece os direitos sobre materiais de terceiros e o uso de dados sintéticos. Relatos de vulnerabilidades devem usar o canal privado indicado em SECURITY.md. Autenticação continua fora da implementação por decisão do usuário. Mudança somente documental, sem nova execução da suíte.

@@ -175,3 +175,12 @@ Criado docs/AUTHENTICATION.md, com fluxos M2M/humano, validação JWT/JWKS, auto
 - Arquivos de estudo, .env/credenciais, configuração local da IDE, node_modules, dist e logs ficam fora do commit. Revisão de conteúdo antes do envio; sem deploy.
 - Última suíte de integração: 93 testes reais, total com unidade de 203 testes/799 assertions na etapa de entrega. Nesta etapa de publicação, validação local de typecheck/build/unidade repetida; sem alteração do runtime financeiro.
 - Verificação anterior ao commit: typecheck/build aprovados, 110 testes unitários/329 assertions sem falhas; diff staged sem erros de whitespace. Documentos e seleção de 97 arquivos revisados, com estudos/configurações locais e credencial privada de validação excluídos.
+
+
+## Licença e política de segurança — 26/10/2026
+
+- Adicionada licença MIT para código/documentação autorais de Harlem Silvas; README distingue enunciado Jungle Gaming, dependências e marcas de terceiros.
+- Adicionado SECURITY.md com canal privado de reporte, escopo na main e limites da demonstração local, sem promessa de SLA ou suporte a versões anteriores.
+- Autenticação segue somente documentada. Sem alteração de código, dependências, banco ou filas.
+- Validação documental: links locais, texto MIT e diff revisados; suíte de testes não repetida, pois a alteração é somente documental. Última validação de código: 203 testes/799 assertions; typecheck/build/unidade repetidos na publicação inicial.
+- Reporte privado de vulnerabilidades habilitado no GitHub e confirmado via API (`enabled=true`). Nenhum relato ou mensagem enviado.
