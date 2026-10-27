@@ -159,7 +159,7 @@ Esse comando preserva volumes. Não é preciso parar serviços entre execuções
 
 ## Registro para revisão
 
-Anotar data, comando, versão Bun, total de testes e falhas, além do erro relevante. Como ainda não há commit inicial, não existe revisão Git identificável por hash. Não publicar números de throughput ou provas de concorrência antes de implementar e executar essas suítes.
+Anotar data, comando, versão Bun, total de testes e falhas, além do erro relevante. O repositório possui commits publicados; registrar a revisão Git e qualquer alteração local usada na execução. Provas de concorrência existentes estão na suíte de integração. Não publicar números de throughput sem benchmark executado.
 
 Hash, vetor conhecido e eventos explicados em [EVENTS_AND_HASH.md](EVENTS_AND_HASH.md).
 

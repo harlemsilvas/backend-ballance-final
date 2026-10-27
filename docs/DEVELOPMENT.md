@@ -39,3 +39,7 @@ bun scripts/smoke-delivery.ts
 SMOKE_API_URL e SQS_ENDPOINT permitem escolher portas locais alternativas. O smoke deve usar apenas a stack de demonstração escolhida. Não é um benchmark e não injeta falha nas janelas exatas de commit/ack; esses cenários estão nos testes de integração de mensageria.
 
 [Validação da entrega](DELIVERY.md), [HTTP](HTTP_API.md), [mensageria](MESSAGING.md), [scheduler](REFERENCE_SCHEDULER.md), [observabilidade](OBSERVABILITY.md) e [comandos de teste](MANUAL_TESTS.md).
+
+## Imagens de origem
+
+Dockerfile/Compose fixam Bun, PostgreSQL e LocalStack por tag + digest de índice multiplataforma. [IMAGES.md](IMAGES.md) registra referências, método de verificação, plataforma realmente testada e procedimento de atualização. Mudanças de digest precisam de nova validação; rebuild não recebe automaticamente um conteúdo diferente sob a mesma tag.

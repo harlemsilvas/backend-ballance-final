@@ -1,6 +1,6 @@
 # Roteiro de apresentação técnica
 
-Este roteiro descreve a defesa do desenho proposto. Substituir hipóteses por evidências da implementação antes da entrevista.
+Este roteiro descreve a implementação entregue. Usar as evidências registradas em PROJECT_STATUS.md e DELIVERY.md; identificar como propostas as extensões ainda não implementadas.
 
 ## Narrativa sugerida
 
@@ -15,7 +15,7 @@ Este roteiro descreve a defesa do desenho proposto. Substituir hipóteses por ev
 
 ## Perguntas para preparar
 
-- Por que lock pessimista? Simplicidade de serialização por wallet; custo de espera em wallets quentes. Mostrar timeout e medição quando existirem.
+- Por que lock pessimista? Simplicidade de serialização por wallet; custo de espera em wallets quentes. Mostrar o teste de timeout real; medição de capacidade continua pendente.
 - Por que FIFO não basta? Não cobre concorrência HTTP, expiração de dedup nem commit PostgreSQL.
 - Como provar atomicidade? Falhas injetadas, constraints e testes com banco real.
 - Por que não exatamente uma publicação? Envio e marcação não compartilham transação; eventId e dedup tornam redelivery seguro.

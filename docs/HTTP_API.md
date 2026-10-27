@@ -87,7 +87,7 @@ bun run typecheck
 bun run build
 ```
 
-A suíte HTTP inicia servidores em portas locais livres e os encerra. Prepara/remove schema e papel próprios. Não depende de API já iniciada. Resultado completo: 163 testes, zero falhas, 589 assertions (105 unitários e 58 integração), incluindo 14 HTTP.
+A suíte HTTP inicia servidores em portas locais livres e os encerra. Prepara/remove schema e papel próprios. Não depende de API já iniciada. Registro histórico da etapa HTTP: 163 testes, zero falhas, 589 assertions (105 unitários e 58 integração), incluindo 14 HTTP.
 
 Para o modo liveness padrão:
 

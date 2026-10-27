@@ -1,10 +1,10 @@
 # Estado do projeto
 
-Atualizado em 26/10/2026.
+Atualizado em 27/10/2026.
 
 ## Resumo atual
 
-203 testes passaram (110 unitários + 93 integração, 799 assertions) em 17 arquivos. Typecheck e build aprovados. Entrega Docker Compose e provisionamento de runtime restrito validados em projeto/volume isolados.  Scheduler automático de referências e observabilidade obrigatória implementados: logs JSON, métricas Prometheus, indicadores duráveis DB/SQS e endpoints da API/workers.
+205 testes passaram (110 unitários + 95 integração, 819 assertions) em 18 arquivos. Typecheck e build aprovados. Entrega Docker Compose e provisionamento de runtime restrito validados em projeto/volume isolados, agora com imagens de origem fixadas por digest verificado. Scheduler automático de referências e observabilidade obrigatória implementados: logs JSON, métricas Prometheus, indicadores duráveis DB/SQS e endpoints da API/workers.
 
 Guias: [scheduler](docs/REFERENCE_SCHEDULER.md), [observabilidade](docs/OBSERVABILITY.md), [mensageria](docs/MESSAGING.md) e [comandos Bash](docs/MANUAL_TESTS.md).
 
@@ -48,7 +48,7 @@ Na etapa anterior, o entrypoint de scheduler foi validado com login temporário 
 
 ## Limitações e continuidade
 
-Núcleo financeiro, HTTP, SQS/inbox/outbox, scheduler e observabilidade obrigatória implementados. As seções abaixo preservam o histórico em cada etapa. Entrega reproduzível com Dockerfile, Compose da aplicação, provisionamento explícito e README final concluída; ativação sobre o volume de desenvolvimento existente permanece opcional e não foi executada. IdP real continua adiado com modo local explícito e ponto de extensão. Não há benchmark, OTel ou dashboard. Jobs concluídos são retidos; agregações/triggers ainda não foram medidos sob carga.
+Núcleo financeiro, HTTP, SQS/inbox/outbox, scheduler e observabilidade obrigatória implementados. As seções abaixo preservam o histórico em cada etapa. Entrega reproduzível com Dockerfile, Compose da aplicação, provisionamento explícito e README final concluída; ativação sobre o volume de desenvolvimento existente permanece opcional e não foi executada. IdP real continua adiado com modo local explícito e ponto de extensão. Não há benchmark, OTel ou dashboard. Jobs concluídos são retidos; o primeiro piloto de histórico/coleta está em docs/LOAD_RESULTS.md, sem estabelecer capacidade sob carga de produção.
 
 
 ## Revisão do plano e testes de domínio — 26/10/2026
@@ -184,3 +184,58 @@ Criado docs/AUTHENTICATION.md, com fluxos M2M/humano, validação JWT/JWKS, auto
 - Autenticação segue somente documentada. Sem alteração de código, dependências, banco ou filas.
 - Validação documental: links locais, texto MIT e diff revisados; suíte de testes não repetida, pois a alteração é somente documental. Última validação de código: 203 testes/799 assertions; typecheck/build/unidade repetidos na publicação inicial.
 - Reporte privado de vulnerabilidades habilitado no GitHub e confirmado via API (`enabled=true`). Nenhum relato ou mensagem enviado.
+
+
+## Análise do levantamento de correções — 26/10/2026
+
+- Lido docs/CORRECOES.md e confrontado com enunciado, arquitetura, migrations, outbox/testes de mensageria e coleta de métricas. Levantamento original preservado.
+- Criado docs/PLANO_CORRECOES.md com classificação, evidência, sequência e critérios de aceite; at-least-once é requisito, OTel/dashboard e carga são opcionais.
+- Identificados candidatos para medição: validações completas repetidas por trigger, ausência de índice geral de wager_transactions por wallet e agregações por scrape. Nenhum impacto/ganho foi quantificado.
+- Digests, medição, otimizações condicionais, contrato downstream e experimento de persistência do emulador foram propostos; particionamento não é correção automática.
+- Nenhuma alteração de runtime/configuração/migration; nenhum teste de carga, banco ou fila executado, sem commit/push/deploy. Validação apenas documental e inspeção do código; última suíte completa registrada permanece 203 testes/799 assertions. Autenticação continua somente documentada.
+
+
+## Pacote 1 — digests e coerência documental — 26/10/2026
+
+- PostgreSQL 17.6-alpine, LocalStack 4.8.1 e Bun 1.4.4 fixados por tag + digest de índice multiplataforma em compose.yaml e ambos os FROM do Dockerfile. Versões nominais mantidas.
+- Manifestos consultados no registry oficial; hash dos bytes conferido contra Docker-Content-Digest. docs/IMAGES.md registra referências, método, plataformas e atualização. Validação operacional somente linux/amd64; arm64 não executado.
+- ARCHITECTURE.md reorganizado como estado atual, com propostas futuras explícitas. Guias corrigem pendências obsoletas de HTTP, inbox/outbox, scheduler, métricas e entrega; números de etapas anteriores foram mantidos como registros históricos. Links do enunciado apontam para docs/CHALLENGE.md.
+- Build Docker real (builder clássico), typecheck/build do host, stack saudável e smoke HTTP/SQS/replay/publicação/reconciliação/métricas aprovados em ballance-digests-check.
+- Suíte completa contra PostgreSQL/SQS com os digests: 203 pass/0 fail/799 assertions em 17 arquivos (41,63s). Sem novo benchmark.
+- Shutdown concluído: worker/provisionador/PostgreSQL/LocalStack com saída 0; API com 143/SIGTERM conforme NestJS. Containers isolados encerrados, volume e /tmp/ballance-digests.env preservados para reprodução. Ambiente original continua saudável, sem recriação/migração.
+- Digests/referências, links locais, Markdown e diff verificados. Nenhuma mudança em src/tests, migrations, package.json, bun.lock, enunciado ou estudo do usuário. docs/CORRECOES.md preservado. Sem commit/push/deploy.
+- Próximo pacote: medição de histórico, locks e custo de scrape, antes de índices ou redesign. [Relatório](docs/DELIVERY.md) e [plano](docs/PLANO_CORRECOES.md).
+
+
+## Pacote 2 — primeiro piloto de medição — 27/10/2026
+
+- Criado bun run test:load em scripts/load, separado de src/build/Dockerfile da aplicação. Reutiliza casos de uso/HTTP/consumidor/publisher existentes sem alterar código financeiro ou migrations. Sem novas dependências ou alteração do bun.lock.
+- Recursos por cenário: schema e login restrito gerados, três filas FIFO exclusivas e três processos Bun reais. População pelos casos de uso com constraints ativas; ANALYZE/sondas EXPLAIN antes da janela, aquecimento separado e off/on de /metrics.
+- Rodada pequena de verificação: oito cenários com histórico 10. Em seguida, piloto default com 16 cenários, históricos 100/1.000, hot/spread de 1/3 wallets, HTTP/SQS, concorrência seis, 120 comandos por caso e uma repetição.
+- Piloto: 1.920 operações PROCESSED, 19.616 lançamentos/transações auditados em 32 wallets, replay histórico preservado, inbox/outbox conferidas e DLQ vazia. Zero erros técnicos, rejeições inesperadas, falhas de scrape, retries ou conflitos SQL nos counters. Houve espera de lock, registrada separadamente de timeout/conflito.
+- Relatório em docs/LOAD_RESULTS.md, método em docs/LOAD_TESTS.md e resumo revisado em docs/benchmarks/baseline-20261027.json; brutos locais em /tmp/ballance-load-baseline-20261027. Hashes do código/configuração medidos registrados e conferidos; commit-base com worktree suja explicitado.
+- Evidência sugere investigar histórico/locks/coleta, sem provar ganho de índice ou custo causal isolado. Uma repetição, 120 amostras, caches aquecidos, carga BET-only e topologia combinada de teste não permitem estimar capacidade de produção. Histórico 10.000 não executado.
+- Novo teste de integração interrompe a janela e verifica limpeza de schema/login/filas, preservando schema de controle. Primeira tentativa após retomada falhou por conexão recusada, com containers isolados parados; stack exclusiva foi retomada e o teste passou.
+- Suíte funcional final: 204 pass/0 fail/806 assertions em 18 arquivos (44,18s), contra PostgreSQL/SQS isolados. Typecheck e build aprovados. Autenticação continua somente documentada. Sem commit/push/deploy.
+- Conferência final no ambiente exclusivo: zero schemas de teste, zero logins/conexões bb_load e nenhuma fila temporária remanescente. Containers ballance-load-check encerrados com código 0 e volume preservado. Os containers originais backend-ballance já estavam parados nesta retomada e permaneceram assim, sem alteração dos dados.
+- Links/Markdown, diff e hashes do código medido revisados; src, migrations, fixtures existentes, enunciado e arquivos de estudo preservados. Próxima decisão: ampliar/repetir a medição antes de aplicar otimizações.
+
+
+## Experimentos sequenciais 002/003 e plano posterior — 27/10/2026
+
+- Runner ampliado apenas em scripts/load: múltiplos intervalos de coleta, seleção de distribuições/transportes, ordem completa invertida na segunda repetição, sondas SQL repetidas e limite auditado de população. Nenhuma alteração em src, migrations, dependências ou bun.lock.
+- Controle pequeno comprovou off/50ms/1s seguido da ordem inversa e duas sondas por SELECT. Novos controles de interrupção e orçamento passaram antes da extensão maior. Exportador recusa sobrescrever RESULTS/JSON existentes e exige sequência anterior.
+- Experimento 002 concluído: 48 pontos, históricos 100/1.000, 1/6 wallets, HTTP/SQS, três processos, concorrência seis, 360 comandos, duas repetições e off/5s/15s. 17.280 operações medidas, 109.968 lançamentos/transações auditados em 168 wallets, 186 scrapes e zero erros técnicos, rejeições inesperadas, falhas de fonte, retries ou conflitos SQL registrados.
+- População do 002 somou 1.768,64s, fora das janelas medidas; maior população individual 140,71s. Resultados individuais e agregações estão em docs/LOAD_RESULTS_002.md e docs/benchmarks/results-002.json, com brutos locais em /tmp/ballance-load-experiment-002.
+- Experimento 003 focado mirou 10.000 numa wallet/HTTP. A população parou por orçamento em 7.977 entradas aos 600,002s, com saldo/ledger/versão/saldo esperado consistentes. Diagnóstico posterior de aproximadamente 682,37ms preservou ANALYZE e cinco execuções dos SELECTs por consulta. Não houve janela HTTP de 10.000, comparação off/5s ou publicação desse ponto; não se anuncia throughput inexistente.
+- 003 registrado como population-budget-exceeded em docs/LOAD_RESULTS_003.md e docs/benchmarks/results-003.json; trajetória em population-003.json e brutos em /tmp/ballance-load-experiment-003. É limite operacional escolhido, não teto universal ou falha financeira.
+- Fontes/configurações medidas preservadas em sources-002.tar.gz e sources-003.tar.gz; 49 arquivos por bundle conferidos contra os hashes do respectivo ambiente. Fontes financeiras iguais entre rodadas. O 001 e seu JSON foram preservados sem alteração.
+- Regressão final posterior às medições: 205 pass/0 fail/819 assertions em 18 arquivos (42,00s), inclusive SQL adversarial, replay, concorrência, crashes e controles do runner. Typecheck/build aprovados.
+- Plano de melhorias escrito somente após essa regressão, em docs/LOAD_IMPROVEMENT_PLAN.md: atribuição de custo, A/B de índice por wallet, validação histórica/incremental condicionada e coleta conforme evidência. Não há implementação imediata nem migration/índice/trigger/coletor de produção alterado.
+- Índice dos relatórios em docs/LOAD_RESULTS_INDEX.md. Nenhum commit/push/deploy nesta etapa. Autenticação permanece somente documentada.
+- Conferência final: zero schemas temporários, zero logins/conexões de carga e nenhuma fila de teste remanescente. Containers ballance-load-check encerrados com código 0, volume preservado; ambiente original já parado foi mantido no mesmo estado. Relatórios antigos 001/002 não foram sobrescritos.
+
+
+## Consolidação local em Git — 27/10/2026
+
+Usuário autorizou consolidar as alterações concluídas em commit local: digests, coerência documental, runner/controles, relatórios sequenciais e fontes medidas, além do plano posterior aos testes. Conteúdo, links, arquivos locais e bundles foram revisados; os hashes dos arquivos nos bundles foram conferidos. Código financeiro, migrations, bun.lock e enunciado permanecem preservados. Última validação de código: 205 testes/819 assertions, typecheck/build aprovados; não repetida nesta etapa de revisão/commit, sem nova mudança de runtime. Envio remoto e deploy não fazem parte desta solicitação.

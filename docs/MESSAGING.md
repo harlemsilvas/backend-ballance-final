@@ -47,7 +47,7 @@ ProcessWagerTransaction.execute recebe InboxReceipt opcional e executa tudo na m
 
 Erro antes do commit desfaz inclusive a inbox. Queda depois do commit e antes do ack deixa operação/inbox confirmadas: redelivery retorna replay e pode fazer ack sem outro movimento/evento.
 
-PENDING_REFERENCE também pode receber ack: pendência e agendamento foram persistidos junto com a inbox. A continuidade pertence ao caso de uso resume/futuro scheduler SQL, sem depender de reter a mensagem SQS. O teste entrega REFUND antes de BET e retoma a pendência após a referência.
+PENDING_REFERENCE também pode receber ack: pendência e agendamento foram persistidos junto com a inbox. A continuidade pertence ao caso de uso resume/scheduler SQL implementado, sem depender de reter a mensagem SQS. O teste entrega REFUND antes de BET e retoma a pendência após a referência.
 
 ## Visibilidade, erros e DLQ
 
@@ -132,10 +132,10 @@ WORKER_MODE=consumer bun run worker
 WORKER_MODE=publisher bun run worker
 ```
 
-Filas padrão: wager-transactions.fifo, wager-transactions-dlq.fifo e wager-events.fifo. Nomes podem ser configurados por WAGER_QUEUE_NAME, WAGER_DLQ_NAME e EVENT_QUEUE_NAME. Encerrar com Ctrl+C ou SIGTERM. Esses comandos operacionais foram preparados; não ficaram workers rodando no desenvolvimento, pois runtime/public ainda não foram provisionados.
+Filas padrão: wager-transactions.fifo, wager-transactions-dlq.fifo e wager-events.fifo. Nomes podem ser configurados por WAGER_QUEUE_NAME, WAGER_DLQ_NAME e EVENT_QUEUE_NAME. Encerrar com Ctrl+C ou SIGTERM. Os entrypoints e a stack Compose foram validados com runtime restrito em projeto/volume isolados (DELIVERY.md). O ambiente de desenvolvimento original/public não foi provisionado.
 
 ## Pendências
 
-Scheduler automático e observabilidade foram implementados nas etapas seguintes, descritas em REFERENCE_SCHEDULER.md e OBSERVABILITY.md. Preparação operacional persistente e entrega reproduzível permanecem pendentes. Consumidor/publisher e testes de crash estão implementados; não equivalem a benchmark ou validação AWS real.
+Scheduler automático e observabilidade foram implementados nas etapas seguintes, descritas em REFERENCE_SCHEDULER.md e OBSERVABILITY.md. Provisionamento explícito e entrega reproduzível estão implementados e validados em projeto isolado; ver DELIVERY.md. Consumidor/publisher e testes de crash estão implementados; não equivalem a benchmark ou validação AWS real.
 
 A configuração atual exige três migrations; reference_jobs e modo all são descritos em [REFERENCE_SCHEDULER.md](REFERENCE_SCHEDULER.md).

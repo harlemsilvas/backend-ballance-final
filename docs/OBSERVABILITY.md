@@ -54,7 +54,7 @@ Histograms têm buckets cumulativos em segundos, incluindo +Inf, sum e count. Da
 
 API financeira: GET /metrics, /health/live e /health/ready no listener da API. A ativação padrão continua liveness-only até configurar FINANCIAL_API_ENABLED e runtime restrito.
 
-Workers: mesmos endpoints no servidor NestJS separado em WORKER_METRICS_PORT (default 9101). Bind em 127.0.0.1. Readiness verifica PostgreSQL e SQS. No desligamento, drenar trabalhos, fechar servidor de métricas e então encerrar clientes/pool.
+Workers: mesmos endpoints no servidor NestJS separado em WORKER_METRICS_PORT (default 9101). Bind padrão em 127.0.0.1; HTTP_HOST=0.0.0.0 no Compose permite comunicação interna, com porta do host restrita a localhost. Readiness verifica PostgreSQL e SQS. No desligamento, drenar trabalhos, fechar servidor de métricas e então encerrar clientes/pool.
 
 ```bash
 curl --fail --silent --show-error http://127.0.0.1:3000/metrics
@@ -99,6 +99,11 @@ Provas: logs filtrados e IDs; labels limitados; histogramas; resultados pós-com
 
 A implementação Prometheus é pequena e específica, sem dependência adicional; testes verificam seu formato/categorias. Logs são JSON direto em stdout, apropriados ao redirecionamento do ambiente. Exportação OpenTelemetry, dashboard, armazenamento externo de logs e alertas não foram adicionados, pois são opcionais no enunciado.
 
-Instrumentação cobre os requisitos obrigatórios, mas não é benchmark nem garantia de publicação exatamente uma vez. Provisionamento persistente e empacotamento da aplicação permanecem para a entrega. [Scheduler e claims](REFERENCE_SCHEDULER.md).
+Instrumentação cobre os requisitos obrigatórios, mas não é benchmark nem garantia de publicação exatamente uma vez. Provisionamento restrito e empacotamento estão implementados e foram validados em projeto Compose isolado (DELIVERY.md). [Scheduler e claims](REFERENCE_SCHEDULER.md).
 
-Validação consolidada desta etapa: **202 testes passaram, 788 assertions**, typecheck e build aprovados. São 110 unitários e 92 integração.
+Registro histórico da etapa de scheduler/observabilidade: **202 testes passaram, 788 assertions**, typecheck e build aprovados. São 110 unitários e 92 integração.
+
+
+## Medição exploratória do custo da coleta
+
+O pacote 2 adicionou um runner separado da aplicação, comparando /metrics ligado/desligado nos três processos. [Método](LOAD_TESTS.md) e [resultados](LOAD_RESULTS.md) registram uma única repetição, caches aquecidos e limites de atribuição. Nenhum coletor, counter, gauge ou comportamento de falha de produção foi alterado.

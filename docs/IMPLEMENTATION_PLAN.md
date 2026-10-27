@@ -1,21 +1,23 @@
-# Plano de implementação
+# Plano de implementação e estado da entrega
 
-Plano sequencial, sem datas ou prazo de entrega definido. Bootstrap e conectividade local validados; Money, Wallet e ledger têm testes unitários. Configuração ORM e mecanismo de migrations foram antecipados para validar infraestrutura. WagerTransaction também implementado e testado; eventos e hash canônico também implementados. Inbox/Outbox serão desenvolvidos nas etapas de mensageria. Priorizar os 70 pontos de correção financeira, concorrência, idempotência e mensageria antes dos opcionais.
+As nove etapas obrigatórias abaixo foram implementadas e validadas. O histórico detalhado está em [PROJECT_STATUS.md](../PROJECT_STATUS.md); o [enunciado](CHALLENGE.md) permanece a referência dos requisitos. O plano de evolução após a entrega está em [PLANO_CORRECOES.md](PLANO_CORRECOES.md).
 
-| Etapa | Entrega | Critério de conclusão | Estado revisado |
+| Etapa | Entrega | Critério de conclusão | Estado atual |
 |---|---|---|---|
-| 1 | Bootstrap Bun/Nest/strict, dependências fixadas e Compose isolado | Instalação reproduzível, build e conectividade local | Concluída; instalação do zero ainda deve ser reproduzida na entrega |
-| 2 | Money, entidades, eventos e estados | Unidade cobrindo contratos e invariantes | Núcleo financeiro e quatro eventos concluídos; Inbox/Outbox nas etapas 6/7 |
-| 3 | MikroORM, migrations up/down, constraints e permissões | SQL adversarial e reversibilidade em banco descartável | Schema financeiro, up/down/up e grants restritos validados em schema isolado; provisionar runtime persistente antes da API |
-| 4 | Criar wallet, processamento transacional e replay | Atomicidade, abertura, regras e saldo histórico comprovados | Implementado/testado diretamente no PostgreSQL; controllers na etapa 5 |
-| 5 | HTTP, consultas, paginação e reconciliação | Contratos e status consistentes | Implementada/testada em schema isolado; ativação operacional depende de runtime restrito |
-| 6 | Inbox e consumidor SQS | Redelivery, conflito de hash, ack após commit e DLQ | Consumidor/inbox atômica, retry/DLQ e redelivery testados; ativação operacional pendente |
-| 7 | Outbox e referências pendentes | Dois publishers, leases, expiração e crash recovery | Publisher e scheduler com leases/claims, backoff/TTL e recuperação testados |
-| 8 | Observabilidade e shutdown | Métricas obrigatórias, readiness e drenagem | Requisitos obrigatórios implementados/testados; OTel/dashboard opcionais não adicionados |
-| 9 | Prova multiprocesso e entrega | Três instâncias, evidências e setup reproduzido do zero | Três processos, crashes e entrypoint/SIGTERM com runtime temporário provados; entrega reproduzível persistente pendente |
+| 1 | Bun/Nest/strict, versões e Compose | Build e infraestrutura reproduzíveis | Implementada; setup limpo da entrega validado em projeto/volume isolados |
+| 2 | Money, entidades, eventos e estados | Unidade cobrindo contratos e invariantes | Domínio e quatro eventos implementados; inbox/outbox integradas à persistência nas etapas 6/7 |
+| 3 | MikroORM, migrations e permissões | SQL adversarial e reversibilidade em banco exclusivo | Três migrations, grants restritos e provisionador explícito implementados |
+| 4 | Wallet, processamento e replay | Atomicidade, abertura e resultado histórico | Implementada e testada no PostgreSQL, inclusive multiprocesso |
+| 5 | HTTP, consultas e reconciliação | Contratos/status, cursor e snapshot consistente | Implementada; API operacional validada com runtime restrito no Compose isolado |
+| 6 | Inbox e consumidor SQS | Commit/ack, redelivery e DLQ | Implementada; entrypoint real e fluxo Compose validados |
+| 7 | Outbox e referências pendentes | Publishers concorrentes, leases e recuperação | Publisher e scheduler implementados; crashes, backoff/TTL e claims testados |
+| 8 | Observabilidade e shutdown | Métricas obrigatórias, readiness e drenagem | Implementada em API/workers; OTel/dashboard não adicionados |
+| 9 | Prova multiprocesso e entrega | Três processos e setup limpo | Implementada; smoke HTTP/SQS, reinício e persistência validados em projeto exclusivo |
 
-Em cada etapa atualizar estado, testes executados e decisões. Não implementar autenticação, dashboard, double-entry ou benchmark antes dos requisitos obrigatórios. Uma sessão de entrega deve reproduzir setup limpo sem depender do banco do desenvolvedor.
+A validação isolada não migrou o volume de desenvolvimento original. Aplicar a entrega a outro banco/volume exige conferir o alvo; não é pendência de implementação da aplicação. Autenticação externa permanece somente documentada por decisão do usuário. Double-entry, dashboard e OTel não estão implementados; o runner de medição tem um piloto documentado em LOAD_RESULTS.md. Esses opcionais não são apresentados como requisitos obrigatórios concluídos.
 
-## Estrutura planejada
+## Estrutura existente
 
-Código em `src/{domain,application,infrastructure,interfaces,bootstrap}`; testes em `tests/{unit,integration,concurrency,support}`; migrations em `src/infrastructure/persistence/migrations`; scripts em `scripts/`; infraestrutura local em `docker/`; decisões adicionais em `docs/adr/` quando houver uma mudança relevante. Criar os diretórios junto com seus arquivos úteis.
+Código em src/{domain,application,infrastructure,interfaces,bootstrap}; testes em tests/{unit,integration,support}, com filhos Bun para concorrência/crash. Não existe diretório separado de testes/concurrency: as provas estão na integração. Migrations em src/infrastructure/persistence/migrations; scripts em scripts/; infraestrutura local em docker/. Criar novos diretórios somente junto de arquivos úteis.
+
+O primeiro pacote de correções fixa imagens por digest e revisa documentação; os pacotes seguintes dependem de medição e critérios de aceite, sem retirar invariantes financeiras.

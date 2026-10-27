@@ -30,3 +30,27 @@ O arquivo em /tmp é artefato desta validação; gere o próprio `.env` como des
 O volume PostgreSQL persiste o estado financeiro. Esta configuração não garante durabilidade SQS após recriação do emulador, nem usa credenciais/IdP de produção. O provisionamento é um job administrativo serial, separado do runtime. Se interrompido após criar papel/schema, a reexecução recupera migrations pendentes; estados parciais não gerenciados exigem inspeção, sem limpeza automática. Senha não é rotacionada por rerun.
 
 Nenhum reset, remoção de volumes, commit, push ou deploy foi executado. Arquivos de estudo/configurações locais foram preservados. O ambiente de desenvolvimento original não recebeu migrations nem login financeiro nesta validação.
+
+
+## Revalidação com digests fixados — 26/10/2026
+
+- Os três índices foram consultados no Docker Hub e seus bytes conferidos por SHA-256 contra Docker-Content-Digest. Referências completas, tipo de manifesto, plataformas e atualização em [IMAGES.md](IMAGES.md). Versões nominais mantidas.
+- Dockerfile e Compose usam tag + digest; imagens locais/containers conferidos como linux/amd64. As entradas arm64 do registry não foram executadas.
+- Build real com builder clássico concluído; typecheck/build do host aprovados. Stack nova ballance-digests-check, volume exclusivo, portas PostgreSQL 25546, LocalStack 24567, API 23000 e worker 29101. Configuração privada em /tmp/ballance-digests.env, fora do Git.
+- PostgreSQL/LocalStack/API/worker ficaram healthy; provisionador concluiu as três migrations e verificação de runtime com sucesso no schema financial isolado.
+- Smoke reproduzível passou: HTTP, replay, comando SQS, evento publicado, saldo 85.00, reconciliação e métricas. Readiness/métricas do worker também conferidos.
+- Suíte completa repetida contra PostgreSQL/SQS dessa stack: **203 pass, 0 fail, 799 assertions, 17 arquivos**, em 41,63s. Comandos e namespaces de teste exclusivos; nenhum benchmark ou alteração de lógica financeira.
+
+Comandos executados para este projeto isolado (arquivo privado com senha aleatória e portas acima):
+
+```bash
+DOCKER_BUILDKIT=0 docker compose --env-file /tmp/ballance-digests.env -p ballance-digests-check -f compose.yaml -f compose.app.yaml build provision
+docker compose --env-file /tmp/ballance-digests.env -p ballance-digests-check -f compose.yaml -f compose.app.yaml up -d --no-build --wait
+SMOKE_API_URL=http://127.0.0.1:23000 SQS_ENDPOINT=http://127.0.0.1:24567 bun scripts/smoke-delivery.ts
+PATH="$HOME/.bun/bin:$PATH" DB_HOST=127.0.0.1 DB_PORT=25546 DB_USER=ballance DB_PASSWORD=local-development-only DB_NAME=ballance DB_SCHEMA=public SQS_ENDPOINT=http://127.0.0.1:24567 TEST_SQS_ENDPOINT=http://127.0.0.1:24567 bun test tests/unit tests/integration
+docker compose --env-file /tmp/ballance-digests.env -p ballance-digests-check -f compose.yaml -f compose.app.yaml stop
+```
+
+O .env em /tmp é artefato desta sessão, não pré-requisito distribuído. Para reproduzir, gerar seu próprio arquivo privado e escolher portas livres conforme README. Os dados/volumes originais foram preservados; sem commit/push/deploy neste pacote. Durabilidade SQS após recriação e desempenho sob carga continuam fora desta validação.
+
+Shutdown desta revalidação concluído: worker/provisionador/PostgreSQL/LocalStack saíram com código 0; API com 143/SIGTERM conforme NestJS. Containers isolados encerrados, volume preservado. PostgreSQL e LocalStack do projeto original backend-ballance continuaram healthy, sem recriação.

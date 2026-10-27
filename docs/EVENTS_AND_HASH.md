@@ -6,13 +6,13 @@ Implementados em 26/10/2026. Este documento descreve o contrato local e seus lim
 
 Código: `src/application/wager-request.ts`.
 
-- `prepareWagerCommand(body, idempotencyKey)` será usado pelo futuro adaptador HTTP. A chave deve vir explicitamente do header; nunca substituída pelo valor recomendado.
+- `prepareWagerCommand(body, idempotencyKey)` é usado pelo adaptador HTTP implementado. A chave deve vir explicitamente do header; nunca substituída pelo valor recomendado.
 - `prepareSqsWagerRequest(envelope)` valida o envelope WagerTransactionRequested, separa a chave no campo data e chama o mesmo normalizador.
 - `normalizeWagerPayload` valida formato e tipos, rejeita campos desconhecidos, OPENING e referências nulas/undefined explícitas. Não normaliza identificadores por trim: espaços nas bordas são rejeitados para evitar associações silenciosas.
 - Contratos externos deste normalizador aceitam somente BRL, conforme redução de escopo permitida. Money continua multi-moeda e os testes de conflito usam outras moedas.
 - Regras como BET positiva, LOSS zero, exigência/tipo da referência e valor de reversão permanecem na factory WagerTransaction; o normalizador não aplica uma operação financeira.
 
-Envelope SQS requer messageId, type, occurredAt e data, sem campos extras. occurredAt deve ser ISO UTC canônico com milissegundos, como `2026-10-26T12:00:00.000Z`. CorrelationId/atributos de broker não devem ser injetados no corpo de negócio; futuros adaptadores deverão mantê-los em contexto separado. Mensagens com outro contrato exigirão uma versão explícita, sem descartar campos desconhecidos silenciosamente.
+Envelope SQS requer messageId, type, occurredAt e data, sem campos extras. occurredAt deve ser ISO UTC canônico com milissegundos, como `2026-10-26T12:00:00.000Z`. CorrelationId/atributos de broker não devem ser injetados no corpo de negócio; adaptadores mantêm a correlação em contexto separado. Mensagens com outro contrato exigirão uma versão explícita, sem descartar campos desconhecidos silenciosamente.
 
 ## 2. Algoritmo exato do hash
 
@@ -54,7 +54,7 @@ Código: `src/domain/events/`.
 
 Classe abstrata IntegrationEvent<T> com classe concreta por evento. eventType e version=1 ficam no tipo. Envelope: eventId, eventType, aggregateId, correlationId, causationId opcional, occurredAt ISO, version e data. CausationId ausente é omitido, sem null.
 
-Decisão: aggregateId é walletId nos quatro eventos, para agrupar a cadeia financeira da wallet. transactionId continua explícito em data. EventContext recebe IDs e instante do caso de uso; a factory não gera IDs novos a cada serialização. A outbox já persiste; o futuro publisher deve republicar o mesmo envelope/eventId.
+Decisão: aggregateId é walletId nos quatro eventos, para agrupar a cadeia financeira da wallet. transactionId continua explícito em data. EventContext recebe IDs e instante do caso de uso; a factory não gera IDs novos a cada serialização. A outbox já persiste; o publisher republica o mesmo envelope/eventId.
 
 | Classe | Pré-condição da factory | Conteúdo principal |
 |---|---|---|
@@ -69,7 +69,7 @@ Dados são copiados e congelados recursivamente. Money é convertido com toJSON 
 
 Criar um evento não o grava ou publica. A factory valida a fonte observada, mas não verifica commit SQL, correspondência persistente entre ledger/transação nem uniqueness de eventId. O caso de uso e schema devem estabelecer essas garantias.
 
-A factory de pendência pode ser chamada mais de uma vez: o caso de uso futuro deve emitir somente ao entrar em PENDING_REFERENCE, sem emitir em cada tentativa. A factory de saldo exige um lançamento compatível, mas não substitui controle transacional de versão. Duplicatas e reordenação continuam possíveis no transporte.
+A factory de pendência pode ser chamada mais de uma vez: o caso de uso implementado emite somente ao entrar em PENDING_REFERENCE, sem emitir em cada tentativa. A factory de saldo exige um lançamento compatível, mas não substitui controle transacional de versão. Duplicatas e reordenação continuam possíveis no transporte.
 
 Gerar hash não reserva uma chave. Idempotência efetiva foi implementada nos casos de uso com UNIQUE, comparação transacional, tratamento de races e snapshot persistido. O hash isolado continua sem reservar uma chave.
 

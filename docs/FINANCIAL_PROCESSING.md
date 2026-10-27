@@ -1,6 +1,6 @@
 # Criação de wallet e processamento atômico
 
-Implementado e testado em 26/10/2026. Casos de uso conectados ao PostgreSQL por porta transacional, posteriormente integrados a controllers HTTP (ver HTTP_API.md); consumidores SQS ainda pendentes. DDL foi executado somente em schemas descartáveis de teste; public permanece sem migração.
+Implementado e testado em 26/10/2026. Casos de uso conectados ao PostgreSQL por porta transacional, posteriormente integrados a controllers HTTP (ver HTTP_API.md); consumidor SQS, inbox/outbox e scheduler também estão implementados (MESSAGING.md e REFERENCE_SCHEDULER.md). A entrega foi validada em schema financial de projeto Compose isolado; public e o ambiente de desenvolvimento original foram preservados.
 
 ## Código e responsabilidades
 
@@ -71,7 +71,7 @@ Resultado devolvido pode ser alterado pelo chamador sem afetar o snapshot no ban
 
 Referência ausente ou ainda pendente leva a PENDING_REFERENCE, sem ledger. Persistir próxima tentativa e evento de entrada nesse estado na mesma transação. A resposta pendente não é um snapshot terminal: em replay reflete status persistido e saldo atualmente observado sob lock.
 
-`resume(transactionId)` é uma entrada explícita de recuperação para o futuro worker. Ela reidrata a transação existente, trava/revalida a wallet e pode processar ou rejeitar sem criar nova identidade. Repetir uma pendência não repete o evento PendingReference. Tentativas e nextReferenceAttemptAt são persistidos com backoff 1s × 2^tentativas, teto 5min; referência ainda ausente/pendente após 24h vira REFERENCE_EXPIRED terminal, com evento.
+`resume(transactionId)` é uma entrada explícita de recuperação para o scheduler implementado. Ela reidrata a transação existente, trava/revalida a wallet e pode processar ou rejeitar sem criar nova identidade. Repetir uma pendência não repete o evento PendingReference. Tentativas e nextReferenceAttemptAt são persistidos com backoff 1s × 2^tentativas, teto 5min; referência ainda ausente/pendente após 24h vira REFERENCE_EXPIRED terminal, com evento.
 
 **Atualizado:** polling/agendador/claim concorrente foram implementados em REFERENCE_SCHEDULER.md. Resume pode ser chamado manualmente por teste/serviço, sem exigir que nextReferenceAttemptAt já venceu; o scheduler agora seleciona vencidas e usa jitter/claims recuperáveis. Repetir execute de uma pendência não aciona processamento automaticamente.
 
@@ -96,7 +96,7 @@ Updates ORM alteram somente campos mutáveis, preservando identidade e timestamp
 - REFUND antecipado, retomada, TTL, duplicidade de reversão e rollback sem saldo com código distinto.
 - Saldo reconstruído pelo ledger conferido nos cenários de wallet.
 
-Execução completa: 149 testes, zero falhas, 509 assertions; typecheck/build aprovados. São 105 unitários e 44 integração, incluindo 24 casos novos deste arquivo. Recursos de teste removidos e processos filhos encerrados.
+Registro histórico desta etapa: 149 testes, zero falhas, 509 assertions; typecheck/build aprovados. São 105 unitários e 44 integração, incluindo 24 casos novos deste arquivo. Recursos de teste removidos e processos filhos encerrados.
 
 ## Executar no Bash
 
@@ -114,6 +114,6 @@ O arquivo de integração já inicia/encerra os três processos filhos necessár
 
 ## Próximas integrações
 
-Controllers, consultas, paginação e reconciliação já implementados em HTTP_API.md. Ainda falta provisionamento da identidade persistente de banco restrita. Depois, consumidor SQS/inbox no mesmo commit, publisher da outbox com lease e worker de pendências. A inserção da inbox terá de integrar a mesma FinancialSession; envolver execute em outra transação independente não seria atômico.
+Controllers, consultas, paginação e reconciliação já implementados em HTTP_API.md. Provisionamento restrito e entrega Compose estão implementados e validados em projeto isolado (DELIVERY.md). Consumidor SQS/inbox integram a mesma FinancialSession; publisher usa lease e scheduler retoma pendências. Envolver execute em outra transação independente não seria atômico.
 
 Consumidor, inbox e publicação SQS já implementados em MESSAGING.md. As provas multiprocesso exercitam os casos de uso PostgreSQL diretamente; não comprovam queda após commit/antes de ack, SIGTERM do consumidor nem publishers concorrentes. Crash/ack e publishers concorrentes foram posteriormente comprovados na suíte de mensageria; SIGTERM no entrypoint também foi comprovado com runtime temporário; rollout persistente permanece para a entrega.

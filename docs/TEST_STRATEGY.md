@@ -1,6 +1,6 @@
 # Estratégia de testes e evidências
 
-Plano executado até scheduler/observabilidade: 202 testes passaram em 26/10/2026, 788 assertions em 16 arquivos. São 110 unitários e 92 integração. Provas reais de PostgreSQL/SQS, crashes, claims de referência, métricas/logs, timeout de lock e entrypoint com login temporário/SIGTERM. Typecheck/build aprovados. Resta reproduzir a configuração final de entrega em ambiente limpo; benchmark/OTel/dashboard não executados. Runtime/test runner obrigatório: Bun. Usar PostgreSQL e LocalStack reais em containers isolados; relógio e pontos de falha controláveis para testes determinísticos.
+Validação consolidada da entrega: 205 testes passaram em 27/10/2026, 819 assertions em 18 arquivos (110 unidade + 95 integração). Provas reais de PostgreSQL/SQS, crashes, claims de referência, métricas/logs, timeout de lock e entrypoint restrito/SIGTERM. Typecheck/build aprovados. Setup limpo Compose, provisionamento e smoke HTTP/SQS foram reproduzidos em projeto/volume isolados; OTel e dashboard não foram executados. Um [piloto exploratório de carga](LOAD_RESULTS.md) foi executado separadamente da suíte funcional; ele não estabelece capacidade de produção. Runtime/test runner obrigatório: Bun. Usar PostgreSQL e LocalStack reais em recursos exclusivos, relógio e pontos de falha controláveis. [Relatório de entrega](DELIVERY.md).
 
 ## Unidade
 
@@ -17,7 +17,7 @@ SQS: redelivery, mesmo messageId com payload divergente, mensagens inválidas, r
 1. Mesma BET 50 vezes em paralelo: um débito, um resultado original.
 2. Duas BET de 80.00 sobre 100.00: uma PROCESSED, uma REJECTED, saldo 20.00 e um débito; distinguir crédito OPENING na contagem.
 3. Wallets distintas em paralelo: progresso independente, sem lock global.
-4. Pelo menos três processos reais compartilhando banco e fila, identificados nas evidências.
+4. Pelo menos três processos reais simultâneos compartilhando banco nas provas financeiras; SQS real nos testes de consumidor/publishers, com cenários e processos identificados nas evidências.
 5. Matar worker após commit e antes de ack: redelivery sem segundo efeito.
 6. Dois publishers sobre a mesma outbox: recuperação e nenhuma perda; duplicata permitida e deduplicada.
 7. REFUND/ROLLBACK antes da referência: pendência seguida de resultado correto.
@@ -40,3 +40,13 @@ Endpoints e testes HTTP: [HTTP_API.md](HTTP_API.md).
 Mensageria e testes de crash: [MESSAGING.md](MESSAGING.md).
 
 Scheduler: [REFERENCE_SCHEDULER.md](REFERENCE_SCHEDULER.md). Telemetria: [OBSERVABILITY.md](OBSERVABILITY.md).
+
+
+## Runner de medição e interrupção
+
+LOAD_TESTS.md descreve o runner opcional test:load. Ele não é disparado por bun test; a suíte inclui somente um teste curto de interrupção controlada, em tests/integration/load-runner.test.ts, que comprova encerramento e limpeza dos recursos exclusivos sem remover um schema de controle. Benchmark não substitui a suíte financeira.
+
+
+## Experimentos 002/003
+
+Os resultados sequenciais estão em LOAD_RESULTS_INDEX.md; a proposta posterior aos testes está em LOAD_IMPROVEMENT_PLAN.md. A regressão final foi executada após encerrar as medições, preservando SQL adversarial, replay, concorrência e crashes. O runner tem dois controles de segurança operacional: interrupção com recurso de controle preservado e orçamento de população com auditoria parcial, sem apresentar um cenário interrompido como completo.

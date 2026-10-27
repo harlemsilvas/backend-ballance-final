@@ -1,6 +1,6 @@
 # Mapeamento monetário e schema financeiro
 
-Implementação inicial validada em 26/10/2026. A migration foi aplicada/revertida somente em schema de teste exclusivo; ainda não foi aplicada ao schema público de desenvolvimento. Casos de uso financeiros agora existem e são exercitados diretamente nos testes; controllers HTTP implementados e validados em schema isolado (HTTP_API.md).
+Implementação inicial validada em 26/10/2026. Up/down/up foram exercitados em schemas exclusivos de teste. As três migrations também foram aplicadas ao schema financial do projeto Compose isolado da entrega, sem alterar public ou o banco de desenvolvimento original. Casos de uso financeiros agora existem e são exercitados diretamente nos testes; controllers HTTP implementados e validados em schema isolado (HTTP_API.md).
 
 ## Representação exata e ausência de arredondamento
 
@@ -36,7 +36,7 @@ EntitySchema mantém metadados ORM separados do domínio. Relações financeiras
 
 CHECKs/FKs/UNIQUE rejeitam valores inválidos, duplicidade de wallet e identidades, moeda divergente no ledger, aritmética inconsistente e mais de um lançamento para a mesma operação. Índice parcial impede duas reversões PROCESSED do mesmo tipo/referência; pendências/rejeições não consomem o direito de reversão. Um REFUND e um ROLLBACK da mesma BET continuam permitidos pela interpretação documentada.
 
-Terminais exigem result_snapshot JSON objeto, com processedAt somente para PROCESSED e failureCode para REJECTED/FAILED. Depois de terminal, dados da transação não podem ser alterados; sua identidade também não pode mudar enquanto pendente. Snapshot ainda não tem formato público final: o caso de uso deverá guardar a resposta e o saldo histórico corretos, não apenas qualquer objeto JSON.
+Terminais exigem result_snapshot JSON objeto, com processedAt somente para PROCESSED e failureCode para REJECTED/FAILED. Depois de terminal, dados da transação não podem ser alterados; sua identidade também não pode mudar enquanto pendente. O caso de uso já persiste a resposta terminal e o saldo histórico; o CHECK estrutural de JSON sozinho não valida a semântica pública do snapshot.
 
 ## Validações adiadas até o commit
 
@@ -54,15 +54,15 @@ Isso permite escrever wallet, transação e ledger em ordens compatíveis na mes
 
 ## Concorrência, custo e ordem de locks
 
-Triggers de INSERT/UPDATE em transação/ledger adquirem lock da wallet; o verificador final também trava a wallet. Não há lock global. O futuro caso de uso deverá adquirir a wallet antes de escrever/reservar a transação, mantendo essa ordem em HTTP e workers. Esta decisão substitui a sequência inicial que sugeria reservar identidade antes do lock.
+Triggers de INSERT/UPDATE em transação/ledger adquirem lock da wallet; o verificador final também trava a wallet. Não há lock global. O caso de uso implementado adquire a wallet antes de escrever/reservar a transação, mantendo essa ordem em HTTP e workers. Esta decisão substitui a sequência inicial que sugeria reservar identidade antes do lock.
 
-O verificador faz agregação e janela sobre o histórico da wallet a cada disparo; prioriza correção e transparência, com custo crescente por wallet. Ainda não há benchmark ou prova de latência/throughput. Antes de otimizar, medir; qualquer substituição deve manter garantias verificáveis. Deadlocks ainda podem ocorrer em SQL fora da ordem recomendada: PostgreSQL aborta uma transação e o futuro serviço deve tratar retry limitado. Testes desta etapa não demonstram a concorrência multiprocesso exigida pelo desafio.
+O verificador faz agregação e janela sobre o histórico da wallet a cada disparo; prioriza correção e transparência, com custo crescente por wallet. Ainda não há benchmark ou prova de latência/throughput. Antes de otimizar, medir; qualquer substituição deve manter garantias verificáveis. Deadlocks ainda podem ocorrer em SQL fora da ordem recomendada: PostgreSQL aborta uma transação e o serviço implementa retry limitado. Os testes SQL desta etapa isoladamente não demonstram concorrência; as provas multiprocesso posteriores estão em FINANCIAL_PROCESSING.md.
 
 ## Imutabilidade e permissões
 
 Triggers bloqueiam UPDATE/DELETE no ledger e TRUNCATE nas tabelas auditáveis. Transações terminais e identidade de inbox/outbox têm proteção adicional. REVOKE de permissões públicas e função runtimeGrantSql preparam grants mínimos para um papel **existente, não proprietário**: SELECT/INSERT no ledger e SELECT/INSERT/UPDATE nas outras tabelas, sem DELETE/TRUNCATE/DDL.
 
-A migration não cria usuários ou papéis globais. Testes criam um papel NOLOGIN com nome único, verificam operação financeira válida e negações de privilégios, revogam grants e removem o papel. O banco Compose ainda usa a conta administrativa local; provisionar credencial de execução separada antes de conectar a API financeira. Um proprietário/superusuário pode desativar mecanismos; a proteção pressupõe papel restrito em execução.
+A migration não cria usuários ou papéis globais. Testes criam um papel NOLOGIN com nome único, verificam operação financeira válida e negações de privilégios, revogam grants e removem o papel. O PostgreSQL Compose tem conta administrativa para provisionamento; o overlay da aplicação fornece credencial restrita separada para API/workers, validada em projeto isolado (DELIVERY.md). Um proprietário/superusuário pode desativar mecanismos; a proteção pressupõe papel restrito em execução.
 
 ## Migração e reversão
 
@@ -87,9 +87,9 @@ A suíte SQL cria schema `bb_test_<uuid>` e, para permissões, papel `bb_role_<u
 
 ## Evidências e limites
 
-Execução completa: 125 testes passaram, zero falhas, 398 assertions; typecheck e build aprovados. São 105 unitários e 20 de integração (17 SQL financeiros e três de infraestrutura). Incluem escrita/leitura exata pelo ORM no limite, up/down/up, constraints adversariais, rollback incluindo inbox/outbox e permissões restritas.
+Registro histórico desta etapa: 125 testes passaram, zero falhas, 398 assertions; typecheck e build aprovados. São 105 unitários e 20 de integração (17 SQL financeiros e três de infraestrutura). Incluem escrita/leitura exata pelo ORM no limite, up/down/up, constraints adversariais, rollback incluindo inbox/outbox e permissões restritas.
 
-Após esta etapa inicial, foram implementados porta/repositórios transacionais, preenchimento de result_snapshot e testes com três processos. Ver FINANCIAL_PROCESSING.md. Controllers/replay HTTP já implementados; workers e publicação ainda pendentes. Tabelas inbox/outbox e rollback SQL não equivalem à implementação de seus serviços. FK de wallet exige wallet existente; o futuro contrato deverá tratar wallet inexistente antes da aceitação, sem inventar uma wallet para auditar o erro. Rejeições de moeda/player para wallet existente podem preservar os dados solicitados, sem gerar ledger.
+Após esta etapa inicial, foram implementados porta/repositórios transacionais, preenchimento de result_snapshot e testes com três processos. Ver FINANCIAL_PROCESSING.md. Controllers/replay HTTP, workers, publicação e scheduler estão implementados; ver HTTP_API.md, MESSAGING.md e REFERENCE_SCHEDULER.md. Tabelas inbox/outbox e rollback SQL não equivalem à implementação de seus serviços. FK de wallet exige wallet existente; o contrato trata wallet inexistente antes da aceitação, sem inventar uma wallet para auditar o erro. Rejeições de moeda/player para wallet existente podem preservar os dados solicitados, sem gerar ledger.
 
 
 ## Evolução: migration de limite monetário

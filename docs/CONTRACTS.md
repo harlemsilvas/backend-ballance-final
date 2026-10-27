@@ -1,4 +1,4 @@
-# Contratos e interpretações propostas
+# Contratos implementados e interpretações
 
 Contratos implementados na camada HTTP e validados em schema isolado; ativação operacional descrita em HTTP_API.md. Formatos de entrada e endpoints constam no [enunciado](CHALLENGE.md).
 
@@ -42,7 +42,7 @@ Valores inválidos são erros de contrato. Referência ausente dentro do TTL é 
 
 ## Paginação e reconciliação
 
-Ledger com keyset por `(created_at, id)`, ordem crescente, índice `(wallet_id, created_at, id)` e cursor opaco codificado com versão, posição e wallet. Validar escopo e formato; limite default 50 e máximo 100 propostos. Sem promessa de snapshot entre páginas; ordem é estável e ledger imutável. Cursor não é credencial.
+Ledger com keyset por `(created_at, id)`, ordem crescente, índice `(wallet_id, created_at, id)` e cursor opaco codificado com versão, posição e wallet. Validar escopo e formato; limite default 50 e máximo 100 implementados. Sem promessa de snapshot entre páginas; ordem é estável e ledger imutável. Cursor não é credencial.
 
 Reconciliação inclui OPENING, soma créditos menos débitos com aritmética exata e usa snapshot consistente. Diferença é `storedBalance - calculatedBalance`, podendo ser negativa. Divergência gera log, métrica e `consistent: false`, sem reparo automático.
 

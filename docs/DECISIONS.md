@@ -1,6 +1,6 @@
 # Decisões de engenharia para estudo
 
-Este documento explica o desenho e o que já foi comprovado. O enunciado integral está no README e a arquitetura detalhada em ARCHITECTURE.md. Nenhuma decisão proposta equivale a uma garantia implementada.
+Este documento explica o desenho e o que já foi comprovado. O enunciado integral está em [CHALLENGE.md](CHALLENGE.md), o setup atual no [README](../README.md) e a arquitetura em [ARCHITECTURE.md](../ARCHITECTURE.md). Resultados numéricos nas seções registram as respectivas etapas históricas; o consolidado está em PROJECT_STATUS.md. Nenhuma decisão proposta equivale a uma garantia implementada.
 
 ## 1. Testes acompanham a implementação
 
@@ -26,7 +26,7 @@ Este documento explica o desenho e o que já foi comprovado. O enunciado integra
 
 **Decisão implementada:** Wallet.debit/credit validam o lançamento antes de atualizar balance/version/updatedAt. Se moeda, valor, saldo ou contexto forem inválidos, a wallet fica intacta. Abertura positiva exige identidade da transação OPENING e retorna crédito; abertura zero não gera lançamento. Versão começa em 1 e só cresce quando o saldo muda.
 
-**Limite:** a entidade não persiste, não faz lock e não deduplica chamadas. O caso de uso deverá guardar wallet, transação, ledger e outbox no mesmo commit. Ledger em memória está congelado; proteção SQL append-only implementada e testada em schema isolado.
+**Limite:** a entidade não persiste, não faz lock e não deduplica chamadas. O caso de uso implementado guarda wallet, transação, ledger e outbox no mesmo commit. Ledger em memória está congelado; proteção SQL append-only implementada e testada em schema isolado.
 
 ## 5. WagerTransaction encapsula transições
 
@@ -47,9 +47,9 @@ stateDiagram-v2
   FAILED --> [*]
 ```
 
-Reagendar PENDING_REFERENCE mantém o estado; não representa uma nova aceitação nem deve gerar outro evento de entrada. Referência ausente/pendente gera sinal para o futuro caso de uso aguardar. Referência terminal rejeitada/falha é incompatível e leva à rejeição auditável pelo caso de uso. A entidade não executa retries nem escolhe status HTTP.
+Reagendar PENDING_REFERENCE mantém o estado; não representa uma nova aceitação nem deve gerar outro evento de entrada. Referência ausente/pendente gera sinal para o caso de uso aguardar. Referência terminal rejeitada/falha é incompatível e leva à rejeição auditável pelo caso de uso. A entidade não executa retries nem escolhe status HTTP.
 
-**Limite:** markProcessed valida referência e estado, mas não confirma existência de débito/ledger no banco; essa ligação será garantida pela transação SQL e schema. Persistência do resultado e replay concorrente agora implementados nos casos de uso.
+**Limite:** markProcessed valida referência e estado, mas não confirma existência de débito/ledger no banco; essa ligação é garantida pela transação SQL e pelo schema implementados. Persistência do resultado e replay concorrente agora implementados nos casos de uso.
 
 ## 6. Reversões têm regras específicas
 
@@ -59,40 +59,40 @@ Reagendar PENDING_REFERENCE mantém o estado; não representa uma nova aceitaç�
 
 ## 7. Lock por wallet e schema como garantia final
 
-**Proposta:** pessimistic lock de linha no PostgreSQL, sem lock global. Após o lock, validar saldo e atualizar wallet/ledger/transação/inbox/outbox em uma transação. Wallets diferentes podem avançar em paralelo; uma wallet muito disputada serializa e pode aumentar latência.
+**Implementado:** pessimistic lock de linha no PostgreSQL, sem lock global. Após o lock, validar saldo e atualizar wallet/ledger/transação/inbox/outbox em uma transação. Wallets diferentes podem avançar em paralelo; uma wallet muito disputada serializa e pode aumentar latência.
 
 **Alternativas:** optimistic locking com retry ou update condicionado. São válidas, mas exigem tratamento adicional de conflito. **Atualizado:** implementação e provas com três processos, 50 duplicatas e duas BET de 80 sobre saldo 100 concluídas. FIFO sozinho não protege o endpoint HTTP nem substitui constraints.
 
 ## 8. Inbox e outbox dão recuperação sem prometer publicação única
 
-**Proposta:** inbox deduplica (consumerName, messageId), identidade financeira deduplica o comando e outbox guarda evento no commit financeiro. Ack SQS só depois de commit. Publicação ocorre depois, com lease recuperável e eventId estável.
+**Implementado:** inbox deduplica (consumerName, messageId), identidade financeira deduplica o comando e outbox guarda evento no commit financeiro. Ack SQS só depois de commit. Publicação ocorre depois, com lease recuperável e eventId estável.
 
 Se o processo morrer depois de publicar e antes de marcar publishedAt, outra instância pode publicar de novo. Consumidor precisa deduplicar. Não há transação única envolvendo PostgreSQL e SQS; o compromisso é at-least-once com efeitos financeiros idempotentes.
 
-**Já validado:** transporte FIFO/redelivery/DLQ e outbox financeira persistida no commit. **Pendente:** inbox financeira, workers, crash entre commit/ack e publishers concorrentes.
+**Já validado:** inbox/outbox atômicas, FIFO/redelivery/DLQ, workers, crash entre commit/ack e publishers concorrentes; ver MESSAGING.md.
 
 ## 9. Migrations reversíveis e testes isolados
 
-**Implementado:** MikroORM 6.6.17 com conexão explícita e runner up/down/pending; teste up/down/up com migration de prova em schema único. Sem schema sync automático no startup. **Custo:** DDL, índices e triggers exigem revisão e testes próprios.
+**Implementado:** MikroORM 6.6.17 com conexão explícita e runner up/down/pending; teste up/down/up com migration de prova em schema único. Sem schema sync automático no startup da aplicação. **Custo:** DDL, índices e triggers exigem revisão e testes próprios.
 
-**Atualizado:** migration financeira real e permissões/constraints já validadas em schema isolado. Aplicação ao public e provisionamento de runtime persistente ainda pendentes. Reversibilidade de uma migration vazia de negócio não prova rollback seguro de dados históricos; produção exigiria plano e backup adequado.
+**Atualizado:** migration financeira real e permissões/constraints já validadas em schema isolado. Runtime restrito foi provisionado em projeto Compose isolado; public e ambiente de desenvolvimento original foram preservados. Reversibilidade de uma migration vazia de negócio não prova rollback seguro de dados históricos; produção exigiria plano e backup adequado.
 
 ## 10. Escopo de entrega
 
-**Proposta:** adiar IdP, dashboard, double-entry e carga até concluir garantias obrigatórias. O ledger solicitado é de entradas de débito/crédito por wallet; não anunciar partidas dobradas. Autenticação adiada exige extensão explícita e uso local documentado quando implementada.
+**Decisão:** IdP, dashboard, double-entry e carga permanecem fora da implementação; requisitos obrigatórios e entrega local foram concluídos. O ledger solicitado é de entradas de débito/crédito por wallet; não anunciar partidas dobradas. Autenticação adiada exige extensão explícita e uso local documentado quando implementada.
 
 O plano é sequencial e não tem datas definidas. Não há evidência para estimar throughput ou declarar correção distribuída completa. PROJECT_STATUS.md registra exatamente o que foi executado.
 
 
 ## 11. Eventos como snapshots e hash como contrato estável
 
-**Implementado:** quatro subclasses de IntegrationEvent, version=1 e snapshots JSON imutáveis. Todas usam aggregateId=walletId e recebem eventId do contexto. Não gerar um novo ID ao serializar permite futura republicação idempotente. A factory confere estado da fonte; não comprova que houve commit.
+**Implementado:** quatro subclasses de IntegrationEvent, version=1 e snapshots JSON imutáveis. Todas usam aggregateId=walletId e recebem eventId do contexto. Não gerar um novo ID ao serializar permite republicação com identidade estável. A factory confere estado da fonte; não comprova que houve commit.
 
 **Implementado:** normalizador de negócio compartilhado entre preparação HTTP/SQS, SHA-256 de JSON ordenado e dinheiro normalizado. Sem metadados no hash. O contrato público foi reduzido a BRL; evita aceitar códigos arbitrários enquanto o domínio Money mantém verificações multi-moeda. Não há trim silencioso nem normalização Unicode de IDs.
 
 **Alternativas e custo:** usar canonicalização genérica como RFC 8785 traria uma especificação mais ampla. O contrato atual só contém strings/objetos e usa algoritmo restrito documentado, com vetor conhecido independente. Mudar normalização após persistir hashes exige compatibilidade explícita. Eventos copiados/congelados custam alocação, em troca de impedir que alterações posteriores na entidade mudem payloads já produzidos.
 
-**Atualizado:** chaves e envelopes persistidos no commit financeiro; adaptação HTTP/SQS ainda pendente. Detalhes, exemplos e limites em [EVENTS_AND_HASH.md](EVENTS_AND_HASH.md).
+**Atualizado:** chaves e envelopes persistidos no commit financeiro; adaptação HTTP/SQS implementada. Detalhes, exemplos e limites em [EVENTS_AND_HASH.md](EVENTS_AND_HASH.md).
 
 
 ## 12. Schema, precisão e garantias no commit
@@ -101,9 +101,9 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Mudança da proposta inicial:** numeric(20,2) arredondaria entradas com mais casas antes do CHECK. Numeric sem typmod com scale <= 2 e magnitude limitada rejeita escala excedente sem arredondamento. Leitura do driver normaliza somente strings válidas; números JS são rejeitados. [Motivo e referência oficial](FINANCIAL_SCHEMA.md).
 
-**Trade-off:** agregação/janela por wallet a cada disparo custa mais conforme o ledger cresce. Nenhuma meta de throughput foi medida; correção vem primeiro. Locks do schema serializam a wallet; futuros casos de uso seguem wallet antes de reservar transação. A sequência anterior foi revista antes de existir serviço financeiro.
+**Trade-off:** agregação/janela por wallet a cada disparo custa mais conforme o ledger cresce. Nenhuma meta de throughput foi medida; correção vem primeiro. Locks do schema serializam a wallet; casos de uso implementados seguem wallet antes de reservar transação. A sequência anterior foi revista antes de existir serviço financeiro.
 
-**Permissões:** grants para papel não proprietário e triggers complementam a imutabilidade. Conta local do Compose é administrativa; runtime role persistente não foi provisionado ainda. A migration foi testada em schema exclusivo; public e dados de desenvolvimento permanecem sem aplicação desta migration.
+**Permissões:** grants para papel não proprietário e triggers complementam a imutabilidade. Conta administrativa do Compose fica no provisionador; API/workers usam papel restrito provisionado no schema financial da stack isolada de entrega. Public e dados do ambiente de desenvolvimento original foram preservados.
 
 **Limite:** schema não sabe se result_snapshot contém a resposta HTTP correta ou se o publisher publicou depois do commit. Esses comportamentos continuam responsabilidades do caso de uso e dos workers, com testes específicos por implementar.
 
@@ -118,7 +118,7 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Evidências:** 50 duplicatas, duas BETs disputando saldo, lock de wallet independente e três processos Bun com barreira de início. Replay histórico foi conferido em processos novos após outros movimentos. Nenhum benchmark foi feito.
 
-**Pendente:** integração HTTP e workers, inbox na mesma sessão, publicação com lease, crash entre commit/ack e publishers concorrentes. Resume é entrada explícita e não um agendador. [Detalhes e comandos](FINANCIAL_PROCESSING.md).
+**Implementado nas etapas seguintes:** integração HTTP/workers, inbox na mesma sessão, publicação com lease, crash entre commit/ack e publishers concorrentes. Resume é a entrada chamada pelo scheduler automático. [Detalhes e comandos](FINANCIAL_PROCESSING.md).
 
 
 ## 14. HTTP fino, cursor exato e snapshot de reconciliação
@@ -129,7 +129,7 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Reconciliação:** REPEATABLE READ evita comparar saldo de um commit com ledger de outro. Divergência gera resposta/log/métrica e não é corrigida silenciosamente. A métrica é por processo, independente da idempotência persistente.
 
-**Startup:** rotas financeiras exigem ativação explícita, schema migrado e papel não proprietário/administrativo. Não criar usuários ou migrar no startup. Testes usam papel/schema temporários; runtime persistente permanece pendente.
+**Startup:** rotas financeiras exigem ativação explícita, schema migrado e papel não proprietário/administrativo. Não criar usuários ou migrar no startup. Testes usam papel/schema temporários; runtime persistente foi validado no projeto Compose isolado, via provisionador separado.
 
 **Evidência:** 14 testes HTTP, inclusive microssegundos, concorrência com reconciliação e falha transitória simulada sem parar containers. Suíte completa: 163 testes/589 assertions. [Guia HTTP e comandos](HTTP_API.md).
 
@@ -146,7 +146,7 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Shutdown:** drenar até prazo; ao expirar, devolver visibilidade/posse e impedir ack/marcação tardios. Coordenar heartbeat em andamento evita cancelar a liberação com renovação atrasada.
 
-**Evidências:** 17 testes novos, com SIGKILL real após commit/antes de ack e após envio/antes de marcação. Suíte total 180 testes/680 assertions. Scheduler automático, métricas completas e preparação operacional ainda pendentes. [Guia e comandos](MESSAGING.md).
+**Evidências:** 17 testes novos, com SIGKILL real após commit/antes de ack e após envio/antes de marcação. Suíte total 180 testes/680 assertions. Scheduler automático, métricas obrigatórias e preparação operacional foram concluídos nas etapas seguintes; ver REFERENCE_SCHEDULER.md, OBSERVABILITY.md e DELIVERY.md. [Guia e comandos](MESSAGING.md).
 
 
 ## 16. Scheduler sem inversão de locks

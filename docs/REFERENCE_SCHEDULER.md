@@ -81,4 +81,4 @@ Descoberta percorre pendências e verificação financeira reconstrói históric
 
 Logs/métricas: [OBSERVABILITY.md](OBSERVABILITY.md). Mensageria: [MESSAGING.md](MESSAGING.md).
 
-Validação consolidada desta etapa: **202 testes passaram, 788 assertions**, typecheck e build aprovados. São 110 unitários e 92 integração.
+Registro histórico da etapa de scheduler/observabilidade: **202 testes passaram, 788 assertions**, typecheck e build aprovados. São 110 unitários e 92 integração.

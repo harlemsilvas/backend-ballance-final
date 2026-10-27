@@ -12,7 +12,8 @@
     "migration:pending": "bun scripts/migrate.ts pending",
     "migration:up": "bun scripts/migrate.ts up",
     "migration:down": "bun scripts/migrate.ts down",
-    "worker": "bun dist/bootstrap/workers.js"
+    "worker": "bun dist/bootstrap/workers.js",
+    "test:load": "bun scripts/load/run.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "3.1156.0",
