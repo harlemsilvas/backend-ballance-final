@@ -239,3 +239,17 @@ Criado docs/AUTHENTICATION.md, com fluxos M2M/humano, validação JWT/JWKS, auto
 ## Consolidação local em Git — 27/10/2026
 
 Usuário autorizou consolidar as alterações concluídas em commit local: digests, coerência documental, runner/controles, relatórios sequenciais e fontes medidas, além do plano posterior aos testes. Conteúdo, links, arquivos locais e bundles foram revisados; os hashes dos arquivos nos bundles foram conferidos. Código financeiro, migrations, bun.lock e enunciado permanecem preservados. Última validação de código: 205 testes/819 assertions, typecheck/build aprovados; não repetida nesta etapa de revisão/commit, sem nova mudança de runtime. Envio remoto e deploy não fazem parte desta solicitação.
+
+
+## Pacote essencial para avaliação por ZIP — 27/10/2026
+
+- Novo gerador `python3 scripts/package-delivery.py`, com allowlist e templates versionados em `scripts/delivery/`, produz `entrega/` e `entrega.zip` ignorados pelo Git. Não sobrescreve edições existentes. Manifesto SHA-256, fontes/migrations/lockfile preservados e documentação essencial; estudos, credenciais, dependências instaladas e benchmarks excluídos.
+- Destinatário usa Docker/Compose, sem Bun/Node/Python no host. Guia contempla máquina nova, instalação oficial por sistema, senha gerada em container, build, provisionamento, execução, testes e smoke. Pacote não é offline nem instalador administrativo universal.
+- Testes em infraestrutura própria sem portas publicadas; loopback mantém as proteções das suítes existentes e PostgreSQL exige SCRAM. Diagnóstico inicial detectou autenticação trust em loopback; corrigida somente na configuração de testes, sem afrouxar teste ou alterar código financeiro. Volumes anteriores preservados.
+- Typecheck/build aprovados; suíte funcional essencial: 203 pass, 0 fail, 799 assertions em 17 arquivos (40,17s). Os dois controles específicos do runner de carga e seu script opcional não integram o pacote; suíte ampliada do repositório segue com 205 testes e não foi alterada.
+- Stack exclusiva ballance-entrega, portas 33000/39101/35546/34567: provisionamento e health aprovados; smoke HTTP/replay/SQS/publicação/reconciliação/métricas passou; stop/up preservou saldo 85.00 BRL. Runtime com tag backend-ballance-entrega:local. Builder clássico validado após falha de descoberta de plugin Buildx no host.
+- Registro distribuído em entrega/VALIDACAO.md. ZIP não inclui .env nem logs privados. Containers de validação encerrados com volumes preservados; nenhum reset, commit, push ou deploy. Nenhum ajuste de src, migrations, dependências ou garantias financeiras.
+
+## Encerramento da sessão — 27/10/2026
+
+Usuário autorizou consolidar o pacote essencial de entrega em commit local e encerrou o desenvolvimento por hoje. Próximas interações serão voltadas ao estudo e esclarecimento de dúvidas. Gerador/templates e documentação ficam versionados; materiais pessoais e artefatos entrega/entrega.zip permanecem ignorados. As validações do pacote registradas acima não foram repetidas para este fechamento, sem alterações de runtime. Push não solicitado nesta etapa.

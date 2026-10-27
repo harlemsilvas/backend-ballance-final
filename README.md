@@ -65,6 +65,16 @@ Autenticação externa, OTel e dashboard permanecem fora desta entrega. Há um [
 
 O [desenho de autenticação e autorização](docs/AUTHENTICATION.md) descreve a integração externa proposta e os critérios para implementá-la. Atualmente há ponto de extensão e modo local; validação JWT/OIDC e políticas completas de acesso ainda não foram implementadas.
 
+## Pacote para avaliação por arquivo compactado
+
+Para gerar uma edição essencial independente do Git, com fontes, configurações, testes obrigatórios e guia de instalação em containers:
+
+```bash
+python3 scripts/package-delivery.py
+```
+
+O comando cria `entrega/` e `entrega.zip`, ignorados pelo Git, com seleção explícita de arquivos e manifesto SHA-256. Recusa sobrescrever artefatos existentes: preserve ou renomeie a edição anterior antes de gerar outra. O destinatário segue `entrega/README.md` e não precisa instalar Bun/Node no host; precisa de Docker/Compose e internet na primeira instalação. Estudos, credenciais, dependências instaladas, resultados e runner exploratório de carga ficam fora. Templates versionados em `scripts/delivery/` mantêm instalação, testes isolados e smoke reproduzíveis. Nenhum pacote é enviado automaticamente.
+
 ## Licença e segurança
 
 O código e a documentação autorais de Harlem Silvas estão disponíveis sob a [licença MIT](LICENSE). O enunciado da Jungle Gaming, preservado em [docs/CHALLENGE.md](docs/CHALLENGE.md), é material de terceiro e não está abrangido por essa concessão. As dependências e demais materiais de terceiros permanecem sujeitos às respectivas licenças; esta licença não concede direitos sobre marcas de terceiros.

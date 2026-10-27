@@ -1,5 +1,9 @@
 # Próxima tarefa
 
+Desenvolvimento encerrado por hoje a pedido do usuário. Próximo foco: estudo do projeto e esclarecimento de dúvidas; nenhuma nova implementação deve ser iniciada sem solicitação.
+
+Pacote essencial para avaliação por arquivo compactado montado em `entrega/` e `entrega.zip`; registro próprio em `entrega/VALIDACAO.md`. Para novas edições, preservar/renomear os artefatos anteriores e executar `python3 scripts/package-delivery.py`. O instrutor segue `entrega/README.md`; instalação/testes/smoke executam em containers. Próximo passo desta entrega: conferir as exigências de formato/tamanho do ambiente de submissão quando forem conhecidas. Não há envio externo autorizado nesta tarefa.
+
 Pacote 1 concluído. As rodadas sequenciais 002 e 003 foram encerradas e revisadas: [índice dos RESULTS](docs/LOAD_RESULTS_INDEX.md). O [plano de melhorias posterior aos testes](docs/LOAD_IMPROVEMENT_PLAN.md) é apenas proposta. Próxima ação: revisar prioridades/critério de aceite antes de autorizar qualquer implementação; não aplicar índices, triggers ou cache automaticamente. A matriz 002 foi contrabalanceada; 003 atingiu o orçamento de população antes de 10.000 e não produziu janela medida nesse volume.
 
 1. Revisar a entrega e, se desejado, ativá-la no volume de desenvolvimento existente seguindo README.md. Conferir o alvo antes de provisionar: schema financial/login ballance_runtime; não adotar objetos não gerenciados. A validação usou volume independente e não migrou public.

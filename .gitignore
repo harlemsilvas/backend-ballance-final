@@ -6,9 +6,14 @@ coverage/
 !.env.example
 *.log
 ESTUDO.md
+ESTUDO_*.md
 
 # Configurações e credenciais locais
 .vscode/
 .aws/
 .codex/
 .agents/
+
+# Artefatos gerados por scripts/package-delivery.py
+/entrega/
+/entrega.zip
