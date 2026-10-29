@@ -70,6 +70,8 @@ Heartbeats em andamento são coordenados antes de devolver/alterar visibilidade,
 
 ## Claims e publicação
 
+As regras de inbox e outbox ficam em `src/domain/inbox-message.ts` e `src/domain/outbox-message.ts`; os adaptadores de persistência fazem apenas a leitura, a gravação e o claim em SQL.
+
 OutboxStore usa transação SQL curta com FOR UPDATE SKIP LOCKED e lease. Somente publishedAt nulo, nextAttemptAt vencido e lease ausente/expirado são elegíveis. Attempts incrementa a cada claim, inclusive quando o processo morre antes do envio. Defaults: lote até 10 e lease 30s.
 
 1. Confirmar claim/token no banco.

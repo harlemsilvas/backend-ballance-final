@@ -23,7 +23,7 @@ Money é imutável, com decimal.js e transporte string de duas casas. Colunas Po
 
 Abertura zero não gera transação/ledger/evento financeiro; abertura positiva persiste OPENING interno, crédito e outbox atomicamente. Wallet começa na versão 1 nos dois casos. Movimentos posteriores incrementam versão somente quando o saldo muda; LOSS/rejeição/replay não incrementam. BET/WIN/REFUND/ROLLBACK exigem valor positivo; LOSS exige zero, interpretação registrada em [DECISIONS.md](docs/DECISIONS.md).
 
-Wallet retorna um ledger válido antes de alterar o estado em memória. Ledger é imutável e valida aritmética/moeda. O caso de uso persiste as entidades na mesma sessão; a entidade isolada não estabelece idempotência nem concorrência. MikroORM/records/mapeadores ficam na infraestrutura, preservando independência do domínio.
+Inbox e outbox têm classes de domínio (`InboxMessage`, `OutboxMessage`, sem decorators), com `receive`/`enqueue`/`rehydrate` e as transições `markProcessed`, `markPublished` e `scheduleRetry`; o backoff da outbox (1s·2^n, teto 5min, jitter) existe só em `OutboxMessage.retryDelayMs`. Adaptação em relação ao enunciado: o claim com `FOR UPDATE SKIP LOCKED` e o lease/token continuam em SQL (`OutboxStore`) por serem atômicos entre processos, e `attempts` é incrementado nesse claim, não em `scheduleRetry`. A unicidade e a imutabilidade continuam garantidas pelo banco. Wallet retorna um ledger válido antes de alterar o estado em memória. Ledger é imutável e valida aritmética/moeda. O caso de uso persiste as entidades na mesma sessão; a entidade isolada não estabelece idempotência nem concorrência. MikroORM/records/mapeadores ficam na infraestrutura, preservando independência do domínio.
 
 ## Unidade transacional e concorrência
 

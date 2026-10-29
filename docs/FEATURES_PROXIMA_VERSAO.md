@@ -29,9 +29,9 @@ Na edição entregue existem expressões como “material complementar do reposi
 
 Usar a mesma origem de código, host, recursos disponíveis, configuração do banco, distribuição de wallets, transporte, concorrência e quantidade de amostras. Alternar ordem e repetir. Preservar resultados anteriores e registrar novas rodadas em sequência; não comparar medições da VPS e de outra máquina como evidência causal. Os perfis existentes oferecem ponto de partida, não critérios universais de capacidade. Definir perfil/SLO antes de prometer ganho ou suportar determinado número de usuários.
 
-## Proposta: classes de domínio para Inbox e Outbox
+## Classes de domínio para Inbox e Outbox (implementadas em 29/10/2026)
 
-O enunciado (§6.5) descreve `InboxMessage` e `OutboxMessage` com factories (`receive`, `enqueue`, `rehydrate`) e transições (`markProcessed`, `markPublished`, `scheduleRetry`). A entrega usa registros persistentes e stores especializados, com as regras garantidas pelo SQL; a adaptação está documentada em ARCHITECTURE.md, mas reduz a uniformidade de modelagem. Proposta, não implementada: extrair essas regras para classes de domínio sem decorators, mantendo os stores e os testes de mensageria como prova de equivalência. Contexto em [ANALISE_ENTREGA.md](ANALISE_ENTREGA.md).
+O enunciado (§6.5) descreve `InboxMessage` e `OutboxMessage` com factories e transições. Foram implementadas em `src/domain/inbox-message.ts` e `src/domain/outbox-message.ts` e passaram a ser usadas por `acceptInbox`, `completeInbox`, `enqueue` e pelo publisher. O claim com `SKIP LOCKED` e o lease seguem em SQL, e `attempts` continua incrementado no claim. Contexto em [ANALISE_ENTREGA.md](ANALISE_ENTREGA.md). Esta mudança existe somente neste repositório: o jungle permanece como entregue.
 
 ## Como apresentar os aprendizados
 

@@ -288,3 +288,6 @@ Análise crítica da entrega e Fase A de correções (29/10/2026), somente docum
 
 
 Fase B concluída (29/10/2026): PR #1 do backend-ballance-jungle mesclado pelo autor em b26f82c, somente documentação e SHA256SUMS (conferido após o merge). Validado localmente que não existem classes InboxMessage/OutboxMessage em src/ nem tests/; inbox e outbox são tratados por acceptInbox/completeInbox na sessão transacional e pelo OutboxStore, com as garantias no SQL. Nome VALIDACAO_CANDIDATA.md mantido. Referências do jungle atualizadas para b26f82c.
+
+
+Classes de domínio InboxMessage e OutboxMessage (29/10/2026). Novos src/domain/inbox-message.ts e outbox-message.ts, usados por acceptInbox, completeInbox, enqueue (mikro-financial-unit-of-work.ts), pelos mapeadores InboxMapper/OutboxMapper e pelo backoff do publisher (OutboxMessage.retryDelayMs). Schema, migrations, OutboxStore (claim SKIP LOCKED e lease), códigos de erro e contratos inalterados; attempts continua incrementado no claim. Testes: typecheck e build aprovados; unitários 136 (16 novos), 0 falhas; integração 95, 0 falhas, contra PostgreSQL 17.6 e LocalStack 4.8.1 reais. Commit 4513fcc. Limitações: completeInbox faz um SELECT adicional; a mudança não está no jungle, cujo src/ passa a divergir deste repositório.

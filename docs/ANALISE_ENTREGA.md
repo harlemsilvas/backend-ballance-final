@@ -15,7 +15,7 @@ Revisão do repositório entregue ([backend-ballance-jungle](https://github.com/
 |---|---|---|---|---|
 | 1 | `SHA256SUMS` não confere para `docs/FINANCIAL_PROCESSING.md` e `docs/MESSAGING.md`, editados depois do manifesto | Alta | Não se aplica (o manifesto só existe no jungle) | Regenerar por último |
 | 2 | `ARCHITECTURE.md` não justificava a escolha do ORM, o mapeamento do `Money` e a estratégia transacional (§4 do enunciado) | Alta | Corrigido: seção "ORM, Money e estratégia transacional" | Aplicar o mesmo texto |
-| 3 | Sem classes de domínio `InboxMessage`/`OutboxMessage` (§6.5); adaptação documentada | Média | Mantida como adaptação; proposta registrada em [FEATURES_PROXIMA_VERSAO.md](FEATURES_PROXIMA_VERSAO.md) | Sem mudança de código |
+| 3 | Sem classes de domínio `InboxMessage`/`OutboxMessage` (§6.5); adaptação documentada | Média | Corrigido neste repositório em 29/10/2026 (`src/domain/inbox-message.ts` e `outbox-message.ts`, commit `4513fcc`); ver [FEATURES_PROXIMA_VERSAO.md](FEATURES_PROXIMA_VERSAO.md) | Não aplicado: o jungle permanece como entregue |
 | 4 | Comandos com `cd /home/harlem/...`, `export PATH` e `bun test tests/...` em 8 documentos | Média | Corrigido: comandos relativos à raiz e `./tests/...` | Aplicar |
 | 5 | Referências a artefatos ausentes: `entrega_teste`, `package-delivery.py --experimental`, `DELIVERY`/`PROJECT_STATUS`; expressão "ambiente de desenvolvimento original" | Média | Expressão reescrita; os demais artefatos já não existem aqui | Remover ou reescrever `EXPERIMENTAL_DELIVERY.md` e `SWAGGER_LOCAL.md` |
 | 6 | Resíduos de processo: `VALIDACAO.md` duplicado, termo "candidata", nomes internos de projeto e `reports/dashboard.html` gerado (942 KB) | Baixa | Não se aplica | Avaliar |

@@ -158,6 +158,8 @@ Se o processo morrer depois de publicar e antes de marcar publishedAt, outra ins
 
 **Implementado:** inbox opcional dentro de ProcessWagerTransaction.execute, usando a mesma FinancialSession de wallet/ledger/outbox. Separar consumerName/messageId do identificador financeiro preserva duas garantias: redelivery do envelope e replay do comando em nova mensagem.
 
+**Classes de domínio (29/10/2026):** `InboxMessage` e `OutboxMessage` encapsulam validação do recibo (`INVALID_INBOX_RECEIPT`), comparação de hash (`INBOX_PAYLOAD_CONFLICT` continua sendo lançado pelo adaptador), conclusão única, criação do envelope e backoff. `acceptInbox`, `completeInbox`, `enqueue` e o publisher as usam por meio de `InboxMapper`/`OutboxMapper`. O claim e o lease permanecem em SQL; `attempts` é incrementado no claim, e `scheduleRetry` só calcula o próximo horário. **Custo:** `completeInbox` faz um SELECT adicional, sobre linha já travada na mesma transação.
+
 **Hash de transporte:** inclui envelope completo, inclusive key/timestamp, sem atributos mutáveis do SQS. Mudança de key no mesmo messageId conflita na inbox, mesmo que o hash financeiro seja igual. Não usar somente hash de negócio na inbox.
 
 **Publisher:** claim curto com SKIP LOCKED, envio fora da transação, lease renovável e confirmação por token. Publicação exatamente uma vez não foi prometida: crash após send pode duplicar; mesmo eventId permite dedup persistente downstream. Teste Standard expõe duplicata que FIFO poderia esconder.

@@ -75,3 +75,5 @@ Atualização de 29/10/2026: commit d3c871f publicado em origin/main. Experiment
 Atualização de 29/10/2026 (análise da entrega): Fase A concluída neste repositório (ver docs/ANALISE_ENTREGA.md). Pendente: decidir se a Fase B será feita no jungle, via branch e PR, com `SHA256SUMS` regenerado por último. Proposta de classes de domínio InboxMessage/OutboxMessage registrada em docs/FEATURES_PROXIMA_VERSAO.md.
 
 Atualização de 29/10/2026: Fase B concluída (PR #1 do jungle, b26f82c). Próximo: planejar as classes de domínio InboxMessage/OutboxMessage (docs/FEATURES_PROXIMA_VERSAO.md), apenas neste repositório e sem alterar o jungle.
+
+Atualização de 29/10/2026: classes InboxMessage e OutboxMessage implementadas e integradas (4513fcc), sem tocar no jungle. Pendente: push, se autorizado; decidir se a divergência de src/ entre este repositório e o jungle precisa de nota no README.
