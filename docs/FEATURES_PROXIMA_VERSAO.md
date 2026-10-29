@@ -1,6 +1,6 @@
 # Features e revisão para uma próxima versão
 
-**Local de evolução:** backend-ballance-final. A main entregue em backend-ballance-jungle tem como referência da submissão 22d06c6 (HEAD atual 7b21208, com duas correções Mermaid de 29/10/2026); propostas só serão transferidas quando necessárias, via issue/PR solicitado, nunca por alteração direta. Ver [política de entrega](DELIVERY.md).
+**Local de evolução:** backend-ballance-final. A main entregue em backend-ballance-jungle tem como referência da submissão 22d06c6 (HEAD atual b26f82c: duas correções Mermaid de 29/10/2026 e o PR #1 de documentação); propostas só serão transferidas quando necessárias, via issue/PR solicitado, nunca por alteração direta. Ver [política de entrega](DELIVERY.md).
 
 Registrado em 28/10/2026 para retomada em 29/10/2026. Este documento pertence ao desenvolvimento e não foi incluído no repositório da avaliação. É um roteiro de análise; não representa funcionalidades implementadas ou ganhos comprovados.
 
@@ -43,4 +43,4 @@ Análise aprofundada e implementação pendentes da próxima sessão. Não houve
 
 ## Atualização editorial
 
-Limpeza das referências internas autorizada e publicada em 22d06c6. A revisão técnica permanece pendente; usar esse commit como referência documental da submissão, preservando os anteriores; o HEAD atual do jungle é 7b21208.
+Limpeza das referências internas autorizada e publicada em 22d06c6. A revisão técnica permanece pendente; usar esse commit como referência documental da submissão, preservando os anteriores; o HEAD atual do jungle é b26f82c.

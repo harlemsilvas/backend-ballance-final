@@ -1,6 +1,6 @@
 # Estado do projeto
 
-**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle (referência da submissão 22d06c6; HEAD atual 7b21208 após duas correções Mermaid de 29/10/2026); nenhuma nova alteração direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
+**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle (referência da submissão 22d06c6; HEAD atual b26f82c: duas correções Mermaid de 29/10/2026 e o PR #1 de documentação); nenhuma nova alteração direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
 
 Atualizado em 27/10/2026.
 
@@ -285,3 +285,6 @@ Revisão de conformidade e limpeza documental (29/10/2026), sem alteração de c
 
 
 Análise crítica da entrega e Fase A de correções (29/10/2026), somente documentação. Diagramas Mermaid de FINANCIAL_PROCESSING.md e MESSAGING.md corrigidos (ponto e vírgula no texto da mensagem quebrava o parser). Comandos dos documentos passaram a ser relativos à raiz, com `./tests/...`, sem caminho local nem `export PATH`. Expressão "ambiente de desenvolvimento original" reescrita. ARCHITECTURE.md ganhou a seção sobre ORM, Money e estratégia transacional exigida pelo enunciado. Referência do jungle atualizada para 7b21208 (duas correções Mermaid feitas pelo autor em 29/10/2026). Achados e plano em docs/ANALISE_ENTREGA.md. Nenhuma alteração no jungle; Fase B (PR) pendente de decisão. Suíte não reexecutada nesta etapa por não haver mudança de código.
+
+
+Fase B concluída (29/10/2026): PR #1 do backend-ballance-jungle mesclado pelo autor em b26f82c, somente documentação e SHA256SUMS (conferido após o merge). Validado localmente que não existem classes InboxMessage/OutboxMessage em src/ nem tests/; inbox e outbox são tratados por acceptInbox/completeInbox na sessão transacional e pelo OutboxStore, com as garantias no SQL. Nome VALIDACAO_CANDIDATA.md mantido. Referências do jungle atualizadas para b26f82c.

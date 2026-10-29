@@ -2,7 +2,7 @@
 
 ## Política após a submissão — 28/10/2026
 
-Por instrução explícita do autor, a `main` entregue em https://github.com/harlemsilvas/backend-ballance-jungle tem como referência documental da submissão `22d06c6`. Em 29/10/2026 o autor aplicou diretamente duas correções de diagrama Mermaid (`c0f6f08` e `7b21208`, somente `docs/FINANCIAL_PROCESSING.md` e `docs/MESSAGING.md`); o HEAD atual é `7b21208`, e o `SHA256SUMS` do jungle não foi regenerado depois dessas edições. Novas alterações não devem ser feitas diretamente nessa branch. Não adicionar documentos nem implementar melhorias ali, inclusive alterações apenas editoriais, fora de PR.
+Por instrução explícita do autor, a `main` entregue em https://github.com/harlemsilvas/backend-ballance-jungle tem como referência documental da submissão `22d06c6`. Em 29/10/2026 o autor aplicou diretamente duas correções de diagrama Mermaid (`c0f6f08` e `7b21208`, somente `docs/FINANCIAL_PROCESSING.md` e `docs/MESSAGING.md`); o `SHA256SUMS` ficou desatualizado nesses dois arquivos. A correção entrou por PR (#1, somente documentação e manifesto, mesclado em `b26f82c`), e o HEAD atual é `b26f82c`. Novas alterações não devem ser feitas diretamente nessa branch. Não adicionar documentos nem implementar melhorias ali, inclusive alterações apenas editoriais, fora de PR.
 
 Os próximos desenvolvimentos, estudos, revisões e testes devem ocorrer neste repositório de desenvolvimento: https://github.com/harlemsilvas/backend-ballance-final (workspace backend-challenge). A pasta local `avaliacao/` possui Git próprio e representa a entrega; não usá-la como ambiente de evolução automática.
 

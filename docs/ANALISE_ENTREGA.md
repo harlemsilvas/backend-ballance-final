@@ -1,6 +1,6 @@
 # Análise crítica da entrega — 29/10/2026
 
-Revisão do repositório entregue ([backend-ballance-jungle](https://github.com/harlemsilvas/backend-ballance-jungle), HEAD `7b21208`) contra o [enunciado](CHALLENGE.md) e contra este repositório. Escopo: documentação e empacotamento. Nenhuma alteração foi feita no jungle; as correções da Fase A foram aplicadas aqui e a Fase B (PR no jungle) depende de decisão do autor.
+Revisão do repositório entregue ([backend-ballance-jungle](https://github.com/harlemsilvas/backend-ballance-jungle), HEAD `7b21208` na data da análise) contra o [enunciado](CHALLENGE.md) e contra este repositório. Escopo: documentação e empacotamento. As correções da Fase A foram aplicadas aqui (`0caa669`) e a Fase B entrou no jungle por PR (#1, `b26f82c`).
 
 ## O que foi conferido
 
@@ -19,9 +19,9 @@ Revisão do repositório entregue ([backend-ballance-jungle](https://github.com/
 | 4 | Comandos com `cd /home/harlem/...`, `export PATH` e `bun test tests/...` em 8 documentos | Média | Corrigido: comandos relativos à raiz e `./tests/...` | Aplicar |
 | 5 | Referências a artefatos ausentes: `entrega_teste`, `package-delivery.py --experimental`, `DELIVERY`/`PROJECT_STATUS`; expressão "ambiente de desenvolvimento original" | Média | Expressão reescrita; os demais artefatos já não existem aqui | Remover ou reescrever `EXPERIMENTAL_DELIVERY.md` e `SWAGGER_LOCAL.md` |
 | 6 | Resíduos de processo: `VALIDACAO.md` duplicado, termo "candidata", nomes internos de projeto e `reports/dashboard.html` gerado (942 KB) | Baixa | Não se aplica | Avaliar |
-| 7 | Política de [DELIVERY.md](DELIVERY.md) apontava `22d06c6`, mas o jungle está em `7b21208` após duas correções Mermaid feitas diretamente pelo autor | Média | Corrigido: referência atualizada | Não se aplica |
+| 7 | Política de [DELIVERY.md](DELIVERY.md) apontava `22d06c6`, mas o jungle estava em `7b21208` após duas correções Mermaid feitas diretamente pelo autor | Média | Corrigido: referência atualizada para `b26f82c` | Não se aplica |
 | 8 | O jungle mantém o experimento 004, o JSON da VPS e a edição experimental; este repositório os excluiu | Baixa | Registrado aqui | Documentar qual é a referência |
 
-## Fase B (adiada)
+## Fase B (concluída)
 
-Decidir depois se vale alterar o jungle. Se sim: branch e PR (sem push direto na `main`), apenas arquivos `.md` e `SHA256SUMS`, com este documento como motivação. Não tocar em `src/`, `tests/`, `compose*` nem `.env.example`.
+PR #1 do jungle, mesclado em `b26f82c`: somente arquivos `.md` e `SHA256SUMS` (achados 1, 2, 4 e 5; `sha256sum -c` sem falhas após o merge). Sem alteração em `src/`, `tests/`, `compose*` nem `.env.example`. Ficaram sem mudança, por decisão do autor: as classes de domínio de inbox/outbox (achado 3, mudança de código) e o nome `VALIDACAO_CANDIDATA.md` (achado 6, apenas estético).
