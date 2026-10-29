@@ -8,7 +8,7 @@ Bun 1.4.4 é fixado em `.bun-version` e package.json. Dependências exatas estã
 bun install --frozen-lockfile
 bun run typecheck
 bun run build
-bun test tests/unit
+bun test ./tests/unit
 ```
 
 O Compose base sobe apenas PostgreSQL e LocalStack, preservando o fluxo anterior:

@@ -1,6 +1,6 @@
 # Criação de wallet e processamento atômico
 
-Implementado e testado em 26/10/2026. Casos de uso conectados ao PostgreSQL por porta transacional, posteriormente integrados a controllers HTTP (ver HTTP_API.md); consumidor SQS, inbox/outbox e scheduler também estão implementados (MESSAGING.md e REFERENCE_SCHEDULER.md). A entrega foi validada em schema financial de projeto Compose isolado; public e o ambiente de desenvolvimento original foram preservados.
+Implementado e testado em 26/10/2026. Casos de uso conectados ao PostgreSQL por porta transacional, posteriormente integrados a controllers HTTP (ver HTTP_API.md); consumidor SQS, inbox/outbox e scheduler também estão implementados (MESSAGING.md e REFERENCE_SCHEDULER.md). A entrega foi validada em schema financial de projeto Compose isolado; public e o ambiente local do desenvolvedor foram preservados.
 
 ## Código e responsabilidades
 
@@ -38,7 +38,7 @@ sequenceDiagram
   C->>U: payload, chave, contexto
   U->>U: normalizar, hash e validar domínio
   U->>DB: BEGIN
-  U->>DB: consultar chave; lock da wallet
+  U->>DB: consultar chave e travar a wallet
   U->>DB: reconsultar chave e identidade externa
   U->>U: regras, referências e movimento
   U->>DB: transação + wallet + ledger + outbox
@@ -101,11 +101,10 @@ Registro histórico desta etapa: 149 testes, zero falhas, 509 assertions; typech
 ## Executar no Bash
 
 ```bash
-cd /home/harlem/projetos/backend-challenge
-export PATH="$HOME/.bun/bin:$PATH"
+# Na raiz do repositório, com Bun 1.4.4 no PATH
 docker compose ps
-bun test tests/integration/financial-use-cases.test.ts
-bun test tests/unit tests/integration
+bun test ./tests/integration/financial-use-cases.test.ts
+bun test ./tests/unit ./tests/integration
 bun run typecheck
 bun run build
 ```

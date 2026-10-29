@@ -1,6 +1,6 @@
 # Próxima tarefa
 
-**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle em 22d06c6; nenhum documento ou correção direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
+**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle (referência da submissão 22d06c6; HEAD atual 7b21208 após duas correções Mermaid de 29/10/2026); nenhuma nova alteração direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
 
 Comparativo de volume preparado (100/1.000/3.000) com `bun run test:load:volume`, ainda sem medição de 3.000. Se executado, registrar como o próximo RESULTS sequencial (004) após revisar protocolo/auditoria; não anunciar capacidade de usuários.
 
@@ -71,3 +71,5 @@ Retomada solicitada para a próxima sessão (29/10/2026): revisar correção ger
 Limpeza editorial autorizada e concluída no repositório de avaliação: commit 22d06c6 substitui referências a materiais internos ausentes por README, TEST_STRATEGY e registro de validação; títulos de estudo convertidos em exemplos de uso. Links, manifesto e diff --check aprovados. Somente documentação, sem alteração financeira ou nova suíte. Referência pública atualizada para 22d06c6; revisão técnica da próxima versão continua pendente.
 
 Atualização de 29/10/2026: commit d3c871f publicado em origin/main. Experimento 004, summary da VPS e a edição experimental (entrega_teste, pacote, painel e Swagger empacotados) foram estudos de ambiente e ficam fora do repositório; próximo número de carga reservado: 004. Swagger local e painel de relatórios permanecem como ferramentas opcionais (docs/OPTIONAL_TOOLS.md, scripts `tools:*`).
+
+Atualização de 29/10/2026 (análise da entrega): Fase A concluída neste repositório (ver docs/ANALISE_ENTREGA.md). Pendente: decidir se a Fase B será feita no jungle, via branch e PR, com `SHA256SUMS` regenerado por último. Proposta de classes de domínio InboxMessage/OutboxMessage registrada em docs/FEATURES_PROXIMA_VERSAO.md.

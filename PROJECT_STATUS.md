@@ -1,6 +1,6 @@
 # Estado do projeto
 
-**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle em 22d06c6; nenhum documento ou correção direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
+**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle (referência da submissão 22d06c6; HEAD atual 7b21208 após duas correções Mermaid de 29/10/2026); nenhuma nova alteração direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
 
 Atualizado em 27/10/2026.
 
@@ -282,3 +282,6 @@ Limpeza editorial autorizada e concluída no repositório de avaliação: commit
 
 
 Revisão de conformidade e limpeza documental (29/10/2026), sem alteração de código financeiro. Suíte executada contra PostgreSQL 17.6 e LocalStack 4.8.1 reais: typecheck e build aprovados; `./tests/unit` 120 testes/11 arquivos e `./tests/integration` 95 testes/10 arquivos, 0 falhas. Scripts `test` e `test:integration` passaram a usar `./tests/...` para não incluir cópias locais em entrega_teste/ e avaliacao/. README sem as seções de entrega/entrega_teste (pacote, painel, Swagger, perfis de volume), com o fallback sem Buildx. Matriz 100/1.000/3.000 continua sem rodada documentada no repositório; perfis `test:load3000` e `test:load:volume` disponíveis. Decisão do autor: experimento 004, summary da VPS e a edição experimental (pacote, painel e Swagger empacotados) foram estudos de ambiente e ficam fora do repositório; o índice de carga é 001–003 e o próximo número reservado é 004. Swagger local e painel de relatórios permanecem como ferramentas opcionais em docs/OPTIONAL_TOOLS.md. Commit d3c871f publicado em origin/main.
+
+
+Análise crítica da entrega e Fase A de correções (29/10/2026), somente documentação. Diagramas Mermaid de FINANCIAL_PROCESSING.md e MESSAGING.md corrigidos (ponto e vírgula no texto da mensagem quebrava o parser). Comandos dos documentos passaram a ser relativos à raiz, com `./tests/...`, sem caminho local nem `export PATH`. Expressão "ambiente de desenvolvimento original" reescrita. ARCHITECTURE.md ganhou a seção sobre ORM, Money e estratégia transacional exigida pelo enunciado. Referência do jungle atualizada para 7b21208 (duas correções Mermaid feitas pelo autor em 29/10/2026). Achados e plano em docs/ANALISE_ENTREGA.md. Nenhuma alteração no jungle; Fase B (PR) pendente de decisão. Suíte não reexecutada nesta etapa por não haver mudança de código.

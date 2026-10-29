@@ -1,6 +1,6 @@
 # Features e revisão para uma próxima versão
 
-**Local de evolução:** backend-ballance-final. A main entregue em backend-ballance-jungle está preservada em 22d06c6; propostas só serão transferidas quando necessárias, via issue/PR solicitado, nunca por alteração direta. Ver [política de entrega](DELIVERY.md).
+**Local de evolução:** backend-ballance-final. A main entregue em backend-ballance-jungle tem como referência da submissão 22d06c6 (HEAD atual 7b21208, com duas correções Mermaid de 29/10/2026); propostas só serão transferidas quando necessárias, via issue/PR solicitado, nunca por alteração direta. Ver [política de entrega](DELIVERY.md).
 
 Registrado em 28/10/2026 para retomada em 29/10/2026. Este documento pertence ao desenvolvimento e não foi incluído no repositório da avaliação. É um roteiro de análise; não representa funcionalidades implementadas ou ganhos comprovados.
 
@@ -29,6 +29,10 @@ Na edição entregue existem expressões como “material complementar do reposi
 
 Usar a mesma origem de código, host, recursos disponíveis, configuração do banco, distribuição de wallets, transporte, concorrência e quantidade de amostras. Alternar ordem e repetir. Preservar resultados anteriores e registrar novas rodadas em sequência; não comparar medições da VPS e de outra máquina como evidência causal. Os perfis existentes oferecem ponto de partida, não critérios universais de capacidade. Definir perfil/SLO antes de prometer ganho ou suportar determinado número de usuários.
 
+## Proposta: classes de domínio para Inbox e Outbox
+
+O enunciado (§6.5) descreve `InboxMessage` e `OutboxMessage` com factories (`receive`, `enqueue`, `rehydrate`) e transições (`markProcessed`, `markPublished`, `scheduleRetry`). A entrega usa registros persistentes e stores especializados, com as regras garantidas pelo SQL; a adaptação está documentada em ARCHITECTURE.md, mas reduz a uniformidade de modelagem. Proposta, não implementada: extrair essas regras para classes de domínio sem decorators, mantendo os stores e os testes de mensageria como prova de equivalência. Contexto em [ANALISE_ENTREGA.md](ANALISE_ENTREGA.md).
+
 ## Como apresentar os aprendizados
 
 Para cada evolução aprovada: problema observado → decisão original e trade-off → hipótese de melhoria → experimento → resultado → limites e próximos passos. Se não houver ganho consistente ou a mudança piorar simplicidade/correção, registrar e manter a implementação anterior. A apresentação deve distinguir a versão submetida das propostas e da eventual nova versão implementada.
@@ -39,4 +43,4 @@ Análise aprofundada e implementação pendentes da próxima sessão. Não houve
 
 ## Atualização editorial
 
-Limpeza das referências internas autorizada e publicada em 22d06c6. A revisão técnica permanece pendente; usar esse commit como referência documental da submissão, preservando os anteriores.
+Limpeza das referências internas autorizada e publicada em 22d06c6. A revisão técnica permanece pendente; usar esse commit como referência documental da submissão, preservando os anteriores; o HEAD atual do jungle é 7b21208.

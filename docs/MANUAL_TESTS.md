@@ -5,8 +5,7 @@ Executar na raiz do projeto. Os comandos abaixo usam scripts existentes; a suít
 ## 1. Preparar terminal e dependências
 
 ```bash
-cd /home/harlem/projetos/backend-challenge
-export PATH="$HOME/.bun/bin:$PATH"
+# Na raiz do repositório, com Bun 1.4.4 no PATH
 bun --version
 bun install --frozen-lockfile
 ```
@@ -24,14 +23,14 @@ bun run test
 Por arquivo:
 
 ```bash
-bun test tests/unit/money.test.ts
-bun test tests/unit/wallet.test.ts
-bun test tests/unit/wallet-ledger-entry.test.ts
-bun test tests/unit/wager-transaction.test.ts
-bun test tests/unit/wager-request.test.ts
-bun test tests/unit/integration-events.test.ts
-bun test tests/unit/money-mapper.test.ts
-bun test tests/unit/telemetry.test.ts
+bun test ./tests/unit/money.test.ts
+bun test ./tests/unit/wallet.test.ts
+bun test ./tests/unit/wallet-ledger-entry.test.ts
+bun test ./tests/unit/wager-transaction.test.ts
+bun test ./tests/unit/wager-request.test.ts
+bun test ./tests/unit/integration-events.test.ts
+bun test ./tests/unit/money-mapper.test.ts
+bun test ./tests/unit/telemetry.test.ts
 ```
 
 Durante desenvolvimento, repetir automaticamente ao salvar (Ctrl+C encerra):
@@ -76,34 +75,34 @@ bun run test:integration
 Para apenas o schema financeiro:
 
 ```bash
-bun test tests/integration/financial-schema.test.ts
+bun test ./tests/integration/financial-schema.test.ts
 ```
 
 Para abertura, processamento, replay e concorrência com três processos Bun:
 
 ```bash
-bun test tests/integration/financial-use-cases.test.ts
+bun test ./tests/integration/financial-use-cases.test.ts
 ```
 
 Para endpoints, contratos, cursor e reconciliação HTTP:
 
 ```bash
-bun test tests/integration/financial-http.test.ts
+bun test ./tests/integration/financial-http.test.ts
 ```
 
 Para inbox, DLQ, publishers e crashes reais:
 
 ```bash
-bun test tests/integration/messaging.test.ts
-bun test tests/integration/messaging.test.ts -t SIGKILL
+bun test ./tests/integration/messaging.test.ts
+bun test ./tests/integration/messaging.test.ts -t SIGKILL
 ```
 
 Para scheduler, métricas e entrypoint/SIGTERM:
 
 ```bash
-bun test tests/integration/reference-scheduler.test.ts
-bun test tests/integration/observability.test.ts
-bun test tests/integration/worker-entrypoint.test.ts
+bun test ./tests/integration/reference-scheduler.test.ts
+bun test ./tests/integration/observability.test.ts
+bun test ./tests/integration/worker-entrypoint.test.ts
 ```
 
 O teste roda Bun no host e acessa PostgreSQL/LocalStack publicados. Confere precisão decimal, rollback, FIFO/redelivery/DLQ e migrations up/down/up em schema de prova. Cria somente schemas `bb_test_<uuid>`, filas `bb-test-<uuid>` e um papel NOLOGIN `bb_role_<uuid>` para teste de privilégios, removidos ao final; não usa nem limpa filas financeiras. A tabela temporária é revertida. Não interromper forçadamente enquanto cria recursos; em caso de interrupção, identificar recursos pelo UUID antes de qualquer remoção manual.
@@ -115,7 +114,7 @@ A fila de teste tem visibility timeout zero para obter cinco recebimentos sem sl
 Com containers saudáveis:
 
 ```bash
-bun test tests/unit tests/integration
+bun test ./tests/unit ./tests/integration
 bun run typecheck
 bun run build
 ```

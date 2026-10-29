@@ -2,7 +2,7 @@
 
 ## Política após a submissão — 28/10/2026
 
-Por instrução explícita do autor, a branch `main` entregue em https://github.com/harlemsilvas/backend-ballance-jungle fica preservada na referência `22d06c6`. Não adicionar documentos, implementar melhorias ou fazer correções diretamente nessa branch, inclusive alterações apenas editoriais.
+Por instrução explícita do autor, a `main` entregue em https://github.com/harlemsilvas/backend-ballance-jungle tem como referência documental da submissão `22d06c6`. Em 29/10/2026 o autor aplicou diretamente duas correções de diagrama Mermaid (`c0f6f08` e `7b21208`, somente `docs/FINANCIAL_PROCESSING.md` e `docs/MESSAGING.md`); o HEAD atual é `7b21208`, e o `SHA256SUMS` do jungle não foi regenerado depois dessas edições. Novas alterações não devem ser feitas diretamente nessa branch. Não adicionar documentos nem implementar melhorias ali, inclusive alterações apenas editoriais, fora de PR.
 
 Os próximos desenvolvimentos, estudos, revisões e testes devem ocorrer neste repositório de desenvolvimento: https://github.com/harlemsilvas/backend-ballance-final (workspace backend-challenge). A pasta local `avaliacao/` possui Git próprio e representa a entrega; não usá-la como ambiente de evolução automática.
 
@@ -39,7 +39,7 @@ O arquivo em /tmp é artefato desta validação; gere o próprio `.env` como des
 
 O volume PostgreSQL persiste o estado financeiro. Esta configuração não garante durabilidade SQS após recriação do emulador, nem usa credenciais/IdP de produção. O provisionamento é um job administrativo serial, separado do runtime. Se interrompido após criar papel/schema, a reexecução recupera migrations pendentes; estados parciais não gerenciados exigem inspeção, sem limpeza automática. Senha não é rotacionada por rerun.
 
-Nenhum reset, remoção de volumes, commit, push ou deploy foi executado. Arquivos de estudo/configurações locais foram preservados. O ambiente de desenvolvimento original não recebeu migrations nem login financeiro nesta validação.
+Nenhum reset, remoção de volumes, commit, push ou deploy foi executado. Arquivos de estudo/configurações locais foram preservados. O ambiente local do desenvolvedor não recebeu migrations nem login financeiro nesta validação.
 
 
 ## Revalidação com digests fixados — 26/10/2026

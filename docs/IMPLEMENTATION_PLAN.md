@@ -14,7 +14,7 @@ As nove etapas obrigatórias abaixo foram implementadas e validadas. O históric
 | 8 | Observabilidade e shutdown | Métricas obrigatórias, readiness e drenagem | Implementada em API/workers; OTel/dashboard não adicionados |
 | 9 | Prova multiprocesso e entrega | Três processos e setup limpo | Implementada; smoke HTTP/SQS, reinício e persistência validados em projeto exclusivo |
 
-A validação isolada não migrou o volume de desenvolvimento original. Aplicar a entrega a outro banco/volume exige conferir o alvo; não é pendência de implementação da aplicação. Autenticação externa permanece somente documentada por decisão do usuário. Double-entry, dashboard e OTel não estão implementados; o runner de medição tem um piloto documentado em LOAD_RESULTS.md. Esses opcionais não são apresentados como requisitos obrigatórios concluídos.
+A validação isolada não migrou o volume local do desenvolvedor. Aplicar a entrega a outro banco/volume exige conferir o alvo; não é pendência de implementação da aplicação. Autenticação externa permanece somente documentada por decisão do usuário. Double-entry, dashboard e OTel não estão implementados; o runner de medição tem um piloto documentado em LOAD_RESULTS.md. Esses opcionais não são apresentados como requisitos obrigatórios concluídos.
 
 ## Estrutura existente
 
