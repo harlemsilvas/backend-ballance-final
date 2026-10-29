@@ -9,7 +9,9 @@ import type { IntegrationEvent } from '../../domain/events/integration-event';
 import { WalletSchema, WagerTransactionSchema, WalletLedgerSchema, OutboxSchema, InboxSchema, type WagerTransactionRow } from './financial-records';
 import { DomainError } from '../../domain/domain-error';
 import { WalletMapper } from './wallet-mapper';
-import { TransactionMapper, LedgerMapper } from './financial-mappers';
+import { TransactionMapper, LedgerMapper, InboxMapper, OutboxMapper } from './financial-mappers';
+import { InboxMessage } from '../../domain/inbox-message';
+import { OutboxMessage } from '../../domain/outbox-message';
 
 function stored(row: WagerTransactionRow | null): StoredTransaction | undefined {
   if (!row) return undefined;
@@ -32,18 +34,23 @@ class MikroFinancialSession implements FinancialSession {
     await this.em.execute(`update ${this.referenceTable()} set lease_token=null,lease_until=null where transaction_id=? and lease_token=?`,[claim.transactionId,claim.token]);
   }
   async acceptInbox(receipt: InboxReceipt,at: Date): Promise<boolean> {
-    if (!receipt.consumerName.trim() || !receipt.messageId.trim() || !/^[a-f0-9]{64}$/.test(receipt.payloadHash)) throw new DomainError('INVALID_INBOX_RECEIPT');
+    const message = InboxMessage.receive({ ...receipt,receivedAt: at });
     const key = { consumerName: receipt.consumerName,messageId: receipt.messageId };
     const row = await this.em.findOne(InboxSchema,key,{ lockMode: LockMode.PESSIMISTIC_WRITE,refresh: true });
     if (row) {
-      if (row.payloadHash !== receipt.payloadHash) throw new DomainError('INBOX_PAYLOAD_CONFLICT');
-      return row.processedAt === null;
+      const existing = InboxMapper.fromRow(row);
+      if (!existing.matchesPayload(receipt.payloadHash)) throw new DomainError('INBOX_PAYLOAD_CONFLICT');
+      return !existing.isProcessed();
     }
-    await this.em.persistAndFlush(this.em.create(InboxSchema,{ ...receipt,receivedAt: at,processedAt: null }));
+    await this.em.persistAndFlush(this.em.create(InboxSchema,InboxMapper.toRow(message)));
     return true;
   }
   async completeInbox(receipt: InboxReceipt,at: Date): Promise<void> {
-    await this.em.nativeUpdate(InboxSchema,{ consumerName: receipt.consumerName,messageId: receipt.messageId },{ processedAt: at });
+    const key = { consumerName: receipt.consumerName,messageId: receipt.messageId };
+    const row = await this.em.findOneOrFail(InboxSchema,key,{ refresh: true });
+    const message = InboxMapper.fromRow(row);
+    message.markProcessed(at);
+    await this.em.nativeUpdate(InboxSchema,key,{ processedAt: message.processedAt! });
   }
   async lockWallet(id: string): Promise<Wallet | undefined> {
     const started=performance.now();
@@ -84,11 +91,7 @@ class MikroFinancialSession implements FinancialSession {
     await this.em.persistAndFlush(this.em.create(WalletLedgerSchema,LedgerMapper.toRow(entry,version)));
   }
   async enqueue(event: IntegrationEvent<unknown>): Promise<void> {
-    await this.em.persistAndFlush(this.em.create(OutboxSchema,{
-      id: event.eventId, aggregateId: event.aggregateId, eventType: event.eventType,
-      payload: { ...event.toJSON() }, occurredAt: event.occurredAt, attempts: 0,
-      nextAttemptAt: null, publishedAt: null, leaseToken: null, leaseUntil: null,
-    }));
+    await this.em.persistAndFlush(this.em.create(OutboxSchema,OutboxMapper.toRow(OutboxMessage.enqueue(event))));
   }
 }
 function sqlState(error: unknown): string | undefined {

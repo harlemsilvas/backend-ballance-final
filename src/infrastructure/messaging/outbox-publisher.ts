@@ -1,6 +1,7 @@
 import { NOOP_TELEMETRY,type Telemetry } from '../../application/telemetry';
 import { SQSClient,SendMessageCommand } from '@aws-sdk/client-sqs';
 import { OutboxStore,type OutboxClaim } from '../persistence/outbox-store';
+import { OutboxMessage } from '../../domain/outbox-message';
 export class OutboxPublisher {
   private stopping = false;
   private readonly active = new Map<string,{ claim: OutboxClaim; owned: boolean }>();
@@ -31,7 +32,7 @@ export class OutboxPublisher {
         } catch {
           this.telemetry.count('wager_retries_total',{ component: 'publisher' });
           this.telemetry.event('outbox_retry',{ eventId: claim.id,walletId: claim.aggregateId,attempt: claim.attempts,component: 'publisher',level: 'warn' });
-          if (state.owned) await this.store.retry(claim,Math.min(300000,1000*2 ** Math.min(claim.attempts-1,20) + Math.floor(Math.random()*250)));
+          if (state.owned) await this.store.retry(claim,OutboxMessage.retryDelayMs(claim.attempts,Math.random()*250));
           return 0;
         }
         // Broker confirmed delivery, but published_at is not yet stored. A crash may duplicate delivery.

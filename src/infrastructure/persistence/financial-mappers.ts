@@ -1,6 +1,8 @@
 import { WagerTransaction, type WagerTransactionKind, type WagerTransactionStatus, type FailureCode } from '../../domain/wager-transaction';
 import { WalletLedgerEntry, type LedgerDirection } from '../../domain/wallet-ledger-entry';
-import type { WagerTransactionRow, WalletLedgerRow } from './financial-records';
+import { InboxMessage } from '../../domain/inbox-message';
+import { OutboxMessage } from '../../domain/outbox-message';
+import type { WagerTransactionRow, WalletLedgerRow, InboxRow, OutboxRow } from './financial-records';
 import { MoneyMapper } from './money-mapper';
 
 export const TransactionMapper = {
@@ -39,5 +41,24 @@ export const LedgerMapper = {
       direction: row.direction as LedgerDirection, money: MoneyMapper.fromColumns({ amount: row.amount, currency: row.currency }),
       balanceBefore: MoneyMapper.fromColumns({ amount: row.balanceBefore, currency: row.currency }),
       balanceAfter: MoneyMapper.fromColumns({ amount: row.balanceAfter, currency: row.currency }), createdAt: row.createdAt });
+  },
+};
+export const InboxMapper = {
+  fromRow(row: InboxRow): InboxMessage {
+    return InboxMessage.rehydrate({ consumerName: row.consumerName, messageId: row.messageId, payloadHash: row.payloadHash,
+      receivedAt: row.receivedAt, ...(row.processedAt === null ? {} : { processedAt: row.processedAt }) });
+  },
+  toRow(message: InboxMessage): InboxRow {
+    return { consumerName: message.consumerName, messageId: message.messageId, payloadHash: message.payloadHash,
+      receivedAt: message.receivedAt, processedAt: message.processedAt ?? null };
+  },
+};
+export const OutboxMapper = {
+  /** Lease columns belong to the SQL claim, so a new row always starts unleased. */
+  toRow(message: OutboxMessage): OutboxRow {
+    return { id: message.id, aggregateId: message.aggregateId, eventType: message.eventType,
+      payload: { ...message.payload }, occurredAt: message.occurredAt, attempts: message.attempts,
+      nextAttemptAt: message.nextAttemptAt ?? null, publishedAt: message.publishedAt ?? null,
+      leaseToken: null, leaseUntil: null };
   },
 };
