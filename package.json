@@ -7,13 +7,19 @@
     "typecheck": "tsc --noEmit",
     "start": "bun dist/bootstrap/main.js",
     "dev": "bun --watch src/bootstrap/main.ts",
-    "test": "bun test tests/unit",
-    "test:integration": "bun test tests/integration",
+    "test": "bun test ./tests/unit",
+    "test:integration": "bun test ./tests/integration",
     "migration:pending": "bun scripts/migrate.ts pending",
     "migration:up": "bun scripts/migrate.ts up",
     "migration:down": "bun scripts/migrate.ts down",
     "worker": "bun dist/bootstrap/workers.js",
-    "test:load": "bun scripts/load/run.ts"
+    "test:load": "bun scripts/load/run.ts",
+    "test:load3000": "bun scripts/load/profile3000.ts",
+    "test:load:volume": "bun scripts/load/profile3000.ts --volume",
+    "tools:reports:build": "python3 scripts/reports/build.py",
+    "tools:reports": "bun scripts/reports/serve.ts",
+    "tools:swagger:install": "bun install --cwd scripts/swagger --frozen-lockfile",
+    "tools:swagger": "bun scripts/swagger/main.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "3.1156.0",

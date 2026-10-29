@@ -1,5 +1,15 @@
 # Próxima tarefa
 
+**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle em 22d06c6; nenhum documento ou correção direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
+
+Comparativo de volume preparado (100/1.000/3.000) com `test:load:volume` / `experimento.sh load-volume`, mas ainda sem medição de3.000. README oficial documenta painel, perfis e limites. Se executado futuramente, preservar resultados sequenciais como005 após revisar protocolo/auditoria; não anunciar capacidade de usuários.
+
+Sessão local de 28/10/2026: API/worker experimentais e painel disponíveis; Swagger local em `http://127.0.0.1:3000/docs`, painel em `http://127.0.0.1:38080`. Rodada 004 registrada e fontes preservadas, sem otimização financeira. Guia `docs/SWAGGER_LOCAL.md`; `swagger.sh off` restaura API sem Swagger. Aguardar estudo/revisão do usuário; não substituir entrega essencial nem publicar sem solicitação.
+
+Edição experimental de carga/relatórios concluída em 28/10/2026: `entrega_teste.zip`, gerada com `python3 scripts/package-delivery.py --experimental`, preservando `entrega.zip`. Painel local em `http://127.0.0.1:38080`, com comandos e validações em `docs/EXPERIMENTAL_DELIVERY.md`. Próximo passo: revisão pelo usuário antes de decidir eventual substituição da entrega essencial; sem incorporação automática, novas otimizações, OpenTelemetry ou Grafana.
+
+Revisão documental de 28/10/2026 concluída: `docs/DECISIONS.md` consolida interpretações e soluções implementadas com referências. Continuar estudo e dúvidas; nenhuma alteração financeira autorizada. Pasta/ZIP existentes preservados; uma futura edição gerada incorporará essa revisão.
+
 Desenvolvimento encerrado por hoje a pedido do usuário. Próximo foco: estudo do projeto e esclarecimento de dúvidas; nenhuma nova implementação deve ser iniciada sem solicitação.
 
 Pacote essencial para avaliação por arquivo compactado montado em `entrega/` e `entrega.zip`; registro próprio em `entrega/VALIDACAO.md`. Para novas edições, preservar/renomear os artefatos anteriores e executar `python3 scripts/package-delivery.py`. O instrutor segue `entrega/README.md`; instalação/testes/smoke executam em containers. Próximo passo desta entrega: conferir as exigências de formato/tamanho do ambiente de submissão quando forem conhecidas. Não há envio externo autorizado nesta tarefa.
@@ -45,3 +55,27 @@ Rodadas encerradas: recursos temporários ausentes; containers de medição para
 
 
 A consolidação das alterações concluídas em commit local foi autorizada pelo usuário. Consultar git log para a revisão resultante. Push/deploy permanecem fora do escopo desta solicitação.
+
+
+Preparação para submissão: candidata independente em `avaliacao/` (ignorada no repositório de desenvolvimento), extraída do ZIP experimental sem credenciais. README e registro próprios; nova execução da suíte/smoke pendente. JSON da VPS conferido: 12 cenários, 1.440 comandos, zero erros técnicos/rejeições, auditorias consistentes/replay. Novo repositório exclusivo solicitado; nome/visibilidade pendentes. Nenhuma publicação nesta etapa.
+
+
+## Entrega pública para avaliação — 28/10/2026
+
+Novo repositório exclusivo publicado por autorização do usuário: https://github.com/harlemsilvas/backend-ballance-jungle (público, main, commit bbdabd4bff85471ba7da230f3ec3f4bbabb73023). Pasta local independente: avaliacao/. README enxuto, .env.example, senha gerada por entrega.sh init; .env privado não versionado. Suíte na candidata: typecheck/build aprovados, 215 testes/857 assertions/21 arquivos, 0 falhas, 45,66s; smoke DeliverySmokePassed. Readiness API/worker, Swagger/OpenAPI (dez paths) e painel responderam HTTP 200. Acesso público ao GitHub sem autenticação confirmado com HTTP 200. Canal privado de vulnerabilidades habilitado conforme SECURITY.md.
+
+Demonstração local de avaliação disponível no projeto ballance-avaliacao: API/Swagger em 33000, worker 39101; painel ballance-avaliacao-carga em 38081, somente localhost. Testes encerraram infraestrutura própria com volume preservado. Entregas ZIP anteriores e repositório de desenvolvimento preservados; não houve push para backend-ballance-final. A pasta avaliacao possui Git próprio e está limpa após o envio. Próximo passo do usuário: revisar o link e submeter no formulário da seleção; formulário não enviado pelo agente.
+
+
+Revisão da orientação ao avaliador: README e LOAD_TESTS da pasta avaliacao distinguem scripts Docker (infraestrutura/dependências automáticas) de Bun direto (preparação manual, conexão e LOAD_CONFIRM). Incluído load3000 na tabela curta; manifesto atualizado, diff --check aprovado. Alteração exclusivamente documental, sem nova execução da suíte. Commit e4d0023 no repositório de avaliação.
+
+
+Revisão documental da avaliação: commit 2dcf2f1 em avaliacao alinha ARCHITECTURE/DECISIONS ao conteúdo entregue (Swagger, painel e carga), registra adaptação inbox/outbox e custo de histórico sob lock, atualiza estratégia de testes (dois controles do runner), migrations do worker e distinção entre evidências históricas e atuais. Links relativos, SHA256SUMS e diff --check conferidos; somente Markdown/manifesto, sem execução adicional da suíte nem alteração de código financeiro.
+
+
+Retomada solicitada para a próxima sessão (29/10/2026): revisar correção geral, concorrência e modelagem, planejar próxima versão e apresentação dos aprendizados. Roteiro em docs/FEATURES_PROXIMA_VERSAO.md; inclui limpeza de referências a estudos/documentos de desenvolvimento ausentes na entrega. Versão pública de referência 2dcf2f1 preservada; roteiro somente local, sem implementação ou publicação.
+
+
+Limpeza editorial autorizada e concluída no repositório de avaliação: commit 22d06c6 substitui referências a materiais internos ausentes por README, TEST_STRATEGY e registro de validação; títulos de estudo convertidos em exemplos de uso. Links, manifesto e diff --check aprovados. Somente documentação, sem alteração financeira ou nova suíte. Referência pública atualizada para 22d06c6; revisão técnica da próxima versão continua pendente.
+
+Atualização de 29/10/2026: README limpo de referências a entrega/ e entrega_teste/ (pastas de simulação, a serem excluídas pelo autor). Experimento 004 e summary-volume-vps.json são estudo de ambiente e não integram o repositório; próximo número de carga reservado: 004. Pendente: decidir o destino dos arquivos de estudo ainda na árvore e dos artefatos experimentais não versionados (scripts/delivery-experimental, scripts/reports, scripts/swagger, docs/EXPERIMENTAL_DELIVERY.md, docs/SWAGGER_LOCAL.md) e das referências a eles em scripts/package-delivery.py.

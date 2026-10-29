@@ -15,7 +15,7 @@ git clone https://github.com/harlemsilvas/backend-ballance-final.git
 cd backend-ballance-final
 ```
 
-Requer Docker com Compose e Buildx. O Compose base continua disponível apenas para infraestrutura; o overlay adiciona provisionamento, API e worker (consumer, publisher e scheduler). Antes de usar um volume existente, confira banco, schema `financial` e papel `ballance_runtime`. O provisionador recusa schema sem sua marca de gerenciamento e estados parciais; não adota objetos existentes nem troca senha em reexecuções.
+Requer Docker com Compose e Buildx (sem Buildx, use o builder clássico descrito em [DELIVERY.md](docs/DELIVERY.md)). O Compose base continua disponível apenas para infraestrutura; o overlay adiciona provisionamento, API e worker (consumer, publisher e scheduler). Antes de usar um volume existente, confira banco, schema `financial` e papel `ballance_runtime`. O provisionador recusa schema sem sua marca de gerenciamento e estados parciais; não adota objetos existentes nem troca senha em reexecuções.
 
 Crie `.env` privado, ignorado pelo Git, com `RUNTIME_DB_PASSWORD` aleatória de pelo menos 16 caracteres. Use a mesma senha nas próximas execuções. `.env.example` descreve as demais variáveis; os defaults administrativos são apenas locais. Não use credenciais reais. Para gerar a senha, com Python instalado:
 
@@ -49,7 +49,7 @@ Com Bun 1.4.4 instalado:
 bun install --frozen-lockfile
 bun run typecheck
 bun run build
-bun test tests/unit
+bun run test
 ```
 
 Para integração, suba PostgreSQL/LocalStack pelo Compose base e execute `bun run test:integration`. A suíte usa schemas, filas e papéis exclusivos, PostgreSQL real e SQS no emulador. O usuário de testes precisa criar esses recursos; não execute a suíte com o login restrito da API. [Comandos completos](docs/MANUAL_TESTS.md). [Validação da entrega e fallback sem Buildx](docs/DELIVERY.md).
@@ -62,18 +62,11 @@ Saldo/ledger/transação/inbox/outbox confirmam juntos. Lock por wallet e constr
 
 Autenticação externa, OTel e dashboard permanecem fora desta entrega. Há um [runner de medição exploratória](docs/LOAD_TESTS.md), [resultados sequenciais](docs/LOAD_RESULTS_INDEX.md) e um [plano posterior aos testes](docs/LOAD_IMPROVEMENT_PLAN.md); eles não estabelecem capacidade de produção nem implementam otimizações automaticamente. Não há promessa de exactly-once no broker; consumidores downstream devem deduplicar. A matriz ampliada cobriu 100/1.000 entradas e 1/6 wallets; uma tentativa de chegar a 10.000 parou por orçamento após 7.977 entradas auditadas, sem janela medida nesse volume. As dependências usam versões exatas e lockfile. As três imagens de origem usam tag + digest de índice multiplataforma; origem, plataformas e atualização estão em [IMAGES.md](docs/IMAGES.md).
 
-
 O [desenho de autenticação e autorização](docs/AUTHENTICATION.md) descreve a integração externa proposta e os critérios para implementá-la. Atualmente há ponto de extensão e modo local; validação JWT/OIDC e políticas completas de acesso ainda não foram implementadas.
 
-## Pacote para avaliação por arquivo compactado
+## Ferramentas opcionais
 
-Para gerar uma edição essencial independente do Git, com fontes, configurações, testes obrigatórios e guia de instalação em containers:
-
-```bash
-python3 scripts/package-delivery.py
-```
-
-O comando cria `entrega/` e `entrega.zip`, ignorados pelo Git, com seleção explícita de arquivos e manifesto SHA-256. Recusa sobrescrever artefatos existentes: preserve ou renomeie a edição anterior antes de gerar outra. O destinatário segue `entrega/README.md` e não precisa instalar Bun/Node no host; precisa de Docker/Compose e internet na primeira instalação. Estudos, credenciais, dependências instaladas, resultados e runner exploratório de carga ficam fora. Templates versionados em `scripts/delivery/` mantêm instalação, testes isolados e smoke reproduzíveis. Nenhum pacote é enviado automaticamente.
+Swagger local para explorar os endpoints e painel de relatórios dos experimentos de carga ficam fora do escopo básico e não são iniciados por padrão. Instruções, segurança e limites em [OPTIONAL_TOOLS.md](docs/OPTIONAL_TOOLS.md).
 
 ## Licença e segurança
 

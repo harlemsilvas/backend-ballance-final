@@ -247,13 +247,19 @@ async function main(){
   const endpoint=new URL(process.env.SQS_ENDPOINT??process.env.TEST_SQS_ENDPOINT??'http://127.0.0.1:4567');
   if(!['127.0.0.1','localhost','[::1]'].includes(endpoint.hostname)||endpoint.username||endpoint.password)throw new Error('LOAD_LOCAL_SQS_REQUIRED');
   await mkdir(output);
-  const git=Bun.spawnSync(['git','rev-parse','HEAD']);const dirty=Bun.spawnSync(['git','status','--porcelain']);
+  // ZIPs have no .git and the container need not install Git solely for metadata.
+  let gitHead: string | null=null,worktreeDirty: boolean | null=null;
+  try {
+    const revision=Bun.spawnSync(['git','rev-parse','HEAD']);
+    const state=Bun.spawnSync(['git','status','--porcelain']);
+    if(revision.exitCode===0 && state.exitCode===0){gitHead=revision.stdout.toString().trim();worktreeDirty=state.stdout.length>0;}
+  } catch { /* Exact measured file hashes below remain available without Git. */ }
   const results:unknown[]=[];
   const sourceHashes:Record<string,string>={};
   for(const pattern of ['src/**/*.ts','scripts/load/*.ts'])for await(const name of new Bun.Glob(pattern).scan('.'))sourceHashes[name]=createHash('sha256').update(new Uint8Array(await Bun.file(name).arrayBuffer())).digest('hex');
   for(const name of ['package.json','bun.lock','Dockerfile','compose.yaml','tsconfig.json','tests/support/financial-fixture.ts'])sourceHashes[name]=createHash('sha256').update(new Uint8Array(await Bun.file(name).arrayBuffer())).digest('hex');
   const environment={startedAt:new Date().toISOString(),bun:Bun.version,platform:platform(),arch:arch(),cpu:cpus()[0]?.model,logicalCpus:cpus().length,totalMemoryBytes:totalmem(),
-    sourceHashes,gitHead:git.stdout.toString().trim(),worktreeDirty:dirty.stdout.length>0,dbHost:process.env.DB_HOST,dbPort:process.env.DB_PORT,dbName:process.env.DB_NAME??'ballance',
+    sourceHashes,gitHead,worktreeDirty,dbHost:process.env.DB_HOST,dbPort:process.env.DB_PORT,dbName:process.env.DB_NAME??'ballance',
     sqsEndpoint:process.env.SQS_ENDPOINT??process.env.TEST_SQS_ENDPOINT,histories,requests,concurrency,processes,walletCount,scrapeMs,scrapeIntervals,repeats,shapes,transports,seedBudgetMs,probeRepeats,
     sourceImageReferences:[...await Bun.file('compose.yaml').text().then(s=>s.matchAll(/image: (.+)/g))].map(m=>m[1]),bunImage:(await Bun.file('Dockerfile').text()).split('\n')[0]};
   await Bun.write(join(output,'environment.json'),JSON.stringify(environment,null,2));

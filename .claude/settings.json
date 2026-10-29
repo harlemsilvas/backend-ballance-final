@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env.development)",
+      "Read(./.env.test)",
+      "Read(./.env.production)",
+      "Read(./.aws/**)",
+      "Read(./.codex/**)",
+      "Read(./entrega/**)",
+      "Read(./entrega_teste/**)",
+      "Read(./avaliacao/**)",
+      "Read(./node_modules/**)",
+      "Read(./dist/**)",
+      "Read(./summary-volume-vps.json)",
+      "Read(./entrega.zip)",
+      "Read(./entrega_teste.zip)",
+      "Read(./docs/benchmarks/*.tar.gz)"
+    ]
+  }
+}

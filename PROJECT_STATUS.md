@@ -1,5 +1,7 @@
 # Estado do projeto
 
+**Regra vigente após a submissão:** preservar a main de backend-ballance-jungle em 22d06c6; nenhum documento ou correção direta nessa branch. Desenvolver primeiro em backend-ballance-final. Transferência à entrega apenas quando necessária, mediante solicitação e issue/PR; alterações por PR, sem merge automático. Política completa em [docs/DELIVERY.md](docs/DELIVERY.md). Esta regra substitui as autorizações anteriores de publicação direta.
+
 Atualizado em 27/10/2026.
 
 ## Resumo atual
@@ -253,3 +255,62 @@ Usuário autorizou consolidar as alterações concluídas em commit local: diges
 ## Encerramento da sessão — 27/10/2026
 
 Usuário autorizou consolidar o pacote essencial de entrega em commit local e encerrou o desenvolvimento por hoje. Próximas interações serão voltadas ao estudo e esclarecimento de dúvidas. Gerador/templates e documentação ficam versionados; materiais pessoais e artefatos entrega/entrega.zip permanecem ignorados. As validações do pacote registradas acima não foram repetidas para este fechamento, sem alterações de runtime. Push não solicitado nesta etapa.
+
+
+## Revisão das decisões implementadas — 28/10/2026
+
+Atualizado docs/DECISIONS.md a pedido do usuário durante o estudo. Interpretações adicionais de negócio consolidadas com motivos, código e testes: LOSS zero, payout WIN, reversão por referência/tipo, BRL público, precisão/limite monetário, TTL/backoff, taxonomia e recusa de carteira inexistente. Regras já exigidas são diferenciadas das escolhas de implementação. Corrigidos registros obsoletos sobre medições/testes pendentes, quantidade de tabelas e escopo da entrega; evidências históricas de 205/819 no repositório e 203/799 no pacote essencial explicitadas sem nova execução.
+
+Verificação desta revisão: links locais, blocos Markdown e diff. Não foram executados testes da aplicação nem alterados código, migrations, credenciais ou runtime. O ZIP/pasta de entrega existentes não foram regenerados; a próxima edição gerada incorporará o documento atualizado. Sem commit/push nesta solicitação.
+
+
+## Entrega experimental com carga e relatórios — 28/10/2026
+
+- Usuário autorizou incluir carga e visualização de relatórios em variante separada; confirmou preferência por gráficos/tabelas/filtros, sem OpenTelemetry/Grafana operacional. Gerador aceita --experimental e cria entrega_teste/entrega_teste.zip sem modificar o pacote essencial.
+- Incluídos runner, relatórios/JSON/fontes históricos e painel HTML independente de banco, com filtros, detalhes, importação local de summary/results e CSV. Servidor Bun expõe somente página/health em localhost publicado; não serve .env nem fontes. Templates em scripts/delivery-experimental e scripts/reports; quatro testes novos do modelo do painel.
+- Runner adaptado apenas para metadados Git opcionais em ZIP/container: revisão/estado ausentes ficam nulos; hashes medidos preservados. Nenhuma mudança em src, domínio, casos de uso, migrations, dependências ou lockfile.
+- Validação a partir de ZIP extraído em /tmp: typecheck/build; 209 testes/830 assertions/19 arquivos, zero falhas (63,55s). HTTP curto: quatro cenários/96 comandos; SQS curto: dois cenários/24 comandos; zero erros/rejeições inesperadas, auditorias consistentes/replay e outbox drenada. São verificações da distribuição, não estimativa de capacidade nem novas rodadas 004 de desempenho.
+- Chrome headless validou renderização de 48 cenários, filtro de seis, registro incompleto 003 sem janela medida, importação de quatro cenários e CSV com 52 linhas. Após complementar colunas de lock/retries/conflitos/lag/auditoria, quatro testes unitários/typecheck e verificações Chrome foram repetidos; sem nova execução da suíte financeira completa por esse ajuste de visualização.
+- Documentação em docs/EXPERIMENTAL_DELIVERY.md e README próprio. Testes/cargas encerraram infraestrutura exclusiva, preservando volumes; painel local pode permanecer disponível em localhost:38080 e ser parado com experimento.sh stop. Ambiente original e entrega.zip preservados por conferência SHA-256. Sem commit, push ou deploy nesta tarefa.
+
+
+## Projeto local, carga 004 e Swagger experimental — 28/10/2026
+
+- Usuário solicitou subir o projeto local e executar carga; confirmou Swagger apenas local para teste. API/worker ativos em ballance-experimental, PostgreSQL/LocalStack e volume próprios. Painel em localhost:38080; Swagger em localhost:3000/docs e OpenAPI em /openapi.json. Nenhuma alteração em src, bootstrap/controller financeiro original, migrations, package.json principal ou bun.lock principal.
+- Swagger UI 5.34.0 fixado em pacote/lock próprios de scripts/swagger, instalação sem lifecycle scripts. Bootstrap opcional em alvo Docker swagger, usuário bun, mesmo adaptador financeiro e origem HTTP, sem CORS global. Recusa produção antes de abrir banco. Especificação manual cobre dez caminhos; a documentação precisa acompanhar alterações futuras do contrato.
+- Chrome validou renderização e Try it out real de health/live; HTTP validou assets/JSON/readiness, carteira/BET/replay/conflito409/reconciliação. Três testes novos do contrato/recusa em produção. Regressão experimental: 212 pass/0 fail/844 assertions/20 arquivos (46,15s), typecheck/build aprovados.
+- Rodada 004 concluída: histórico100, 1/3 wallets, HTTP/SQS, três processos, concorrência6, 120 comandos/caso, duas repetições contrabalanceadas e coletaoff/5s. 16 cenários/1.920 operações, zero erros técnicos/rejeições inesperadas/retries/conflitos SQL registrados; auditorias/replay/outbox drenada consistentes. Runner usa banco/filas próprios, não a carteira da demonstração nem o entrypoint Swagger. Não é prova de saturação/usuários máximos.
+- LOAD_RESULTS_004.md e benchmarks/results-004.json preservados em sequência; fontes004 conferidas por hash e arquivadas antes do ajuste Docker de Swagger. 001/002/003 intactos. Painel incorpora004, sem inventar janela de10.000 no003. Guia docs/SWAGGER_LOCAL.md. Infraestrutura de testes/carga parada com volumes preservados; demonstração/painel permanecem ativos para estudo.
+- Entrega essencial mantida por SHA-256; edição experimental atualizada separadamente após validação. Senha privada preservada fora do ZIP; nenhum commit/push/deploy externo.
+
+Conferência final da sessão local: painel atualizado/healthy com 64 cenários distribuídos (002+004; 003 sem janela medida), API Swagger/worker ativos e smoke completo HTTP/SQS aprovado com saldo 85.00 BRL. Testes/carga exclusivos encerrados, volumes preservados.
+
+
+## README visual e perfis comparativos — 28/10/2026
+
+Usuário esclareceu que deseja comparar volume, não anunciar capacidade. README oficial ampliado com painel web, Swagger, instruções reproduzíveis e distinção entre histórico/concorrência/comandos. Perfil test:load3000 é diagnóstico focal; test:load:volume prepara 100/1.000/3.000 sob mesmos parâmetros, duas repetições e orçamento180s por população. Entrada Docker load-volume; descrição sem carga disponível por --describe. Três testes unitários/13 assertions e typecheck passaram; prévia de configuração conferida sem banco/fila. Não foi executada carga com3.000, não há resultado005 nem alterações financeiras. Configuração do runner genérico e entregas originais preservadas; variante experimental atualizada separadamente.
+
+
+Preparação para submissão: candidata independente em `avaliacao/` (ignorada no repositório de desenvolvimento), extraída do ZIP experimental sem credenciais. README e registro próprios; nova execução da suíte/smoke pendente. JSON da VPS conferido: 12 cenários, 1.440 comandos, zero erros técnicos/rejeições, auditorias consistentes/replay. Novo repositório exclusivo solicitado; nome/visibilidade pendentes. Nenhuma publicação nesta etapa.
+
+
+## Entrega pública para avaliação — 28/10/2026
+
+Novo repositório exclusivo publicado por autorização do usuário: https://github.com/harlemsilvas/backend-ballance-jungle (público, main, commit bbdabd4bff85471ba7da230f3ec3f4bbabb73023). Pasta local independente: avaliacao/. README enxuto, .env.example, senha gerada por entrega.sh init; .env privado não versionado. Suíte na candidata: typecheck/build aprovados, 215 testes/857 assertions/21 arquivos, 0 falhas, 45,66s; smoke DeliverySmokePassed. Readiness API/worker, Swagger/OpenAPI (dez paths) e painel responderam HTTP 200. Acesso público ao GitHub sem autenticação confirmado com HTTP 200. Canal privado de vulnerabilidades habilitado conforme SECURITY.md.
+
+Demonstração local de avaliação disponível no projeto ballance-avaliacao: API/Swagger em 33000, worker 39101; painel ballance-avaliacao-carga em 38081, somente localhost. Testes encerraram infraestrutura própria com volume preservado. Entregas ZIP anteriores e repositório de desenvolvimento preservados; não houve push para backend-ballance-final. A pasta avaliacao possui Git próprio e está limpa após o envio. Próximo passo do usuário: revisar o link e submeter no formulário da seleção; formulário não enviado pelo agente.
+
+
+Revisão da orientação ao avaliador: README e LOAD_TESTS da pasta avaliacao distinguem scripts Docker (infraestrutura/dependências automáticas) de Bun direto (preparação manual, conexão e LOAD_CONFIRM). Incluído load3000 na tabela curta; manifesto atualizado, diff --check aprovado. Alteração exclusivamente documental, sem nova execução da suíte. Commit e4d0023 no repositório de avaliação.
+
+
+Revisão documental da avaliação: commit 2dcf2f1 em avaliacao alinha ARCHITECTURE/DECISIONS ao conteúdo entregue (Swagger, painel e carga), registra adaptação inbox/outbox e custo de histórico sob lock, atualiza estratégia de testes (dois controles do runner), migrations do worker e distinção entre evidências históricas e atuais. Links relativos, SHA256SUMS e diff --check conferidos; somente Markdown/manifesto, sem execução adicional da suíte nem alteração de código financeiro.
+
+
+Retomada solicitada para a próxima sessão (29/10/2026): revisar correção geral, concorrência e modelagem, planejar próxima versão e apresentação dos aprendizados. Roteiro em docs/FEATURES_PROXIMA_VERSAO.md; inclui limpeza de referências a estudos/documentos de desenvolvimento ausentes na entrega. Versão pública de referência 2dcf2f1 preservada; roteiro somente local, sem implementação ou publicação.
+
+
+Limpeza editorial autorizada e concluída no repositório de avaliação: commit 22d06c6 substitui referências a materiais internos ausentes por README, TEST_STRATEGY e registro de validação; títulos de estudo convertidos em exemplos de uso. Links, manifesto e diff --check aprovados. Somente documentação, sem alteração financeira ou nova suíte. Referência pública atualizada para 22d06c6; revisão técnica da próxima versão continua pendente.
+
+
+Revisão de conformidade e limpeza documental (29/10/2026), sem alteração de código financeiro. Suíte executada contra PostgreSQL 17.6 e LocalStack 4.8.1 reais: typecheck e build aprovados; `./tests/unit` 120 testes/11 arquivos e `./tests/integration` 95 testes/10 arquivos, 0 falhas. Scripts `test` e `test:integration` passaram a usar `./tests/...` para não incluir cópias locais em entrega_teste/ e avaliacao/. README sem as seções de entrega/entrega_teste (pacote, painel, Swagger, perfis de volume), com o fallback sem Buildx. Matriz 100/1.000/3.000 continua sem rodada documentada no repositório. Decisão do autor: experimento 004 e o summary da VPS foram estudos de ambiente e ficam fora do repositório; o índice de carga voltou a 001–003 e o próximo número reservado é 004. Entradas anteriores deste arquivo sobre 004/entrega experimental são histórico da sessão de 28/10. Nenhum commit nem push.

@@ -1,6 +1,6 @@
 # Sequência dos experimentos de carga
 
-Cada relatório preserva o resultado da sua rodada. Os próximos números são reservados em ordem; não sobrescrever resultados anteriores para incorporar uma execução nova. Índice atualizado em 27/10/2026.
+Cada relatório preserva o resultado da sua rodada. Os próximos números são reservados em ordem; não sobrescrever resultados anteriores para incorporar uma execução nova. Índice atualizado em 29/10/2026.
 
 | Número | Relatório | Escopo | Estado |
 |---|---|---|---|
@@ -8,7 +8,7 @@ Cada relatório preserva o resultado da sua rodada. Os próximos números são r
 | 002 | [LOAD_RESULTS_002.md](LOAD_RESULTS_002.md) | Matriz ampliada: 100/1.000 entradas, 1/6 wallets, 360 comandos, duas repetições com ordem invertida, coleta off/5s/15s e sondas SQL repetidas | Concluído: 48 cenários e 17.280 operações; fontes em benchmarks/sources-002.tar.gz |
 | 003 | [LOAD_RESULTS_003.md](LOAD_RESULTS_003.md) | Extensão controlada para 10.000 entradas, condicionada ao custo observado de população | Encerrado por orçamento: 7.977 entradas em 600,002s, auditoria consistente; sem janela de 10.000 |
 
-O plano de melhoria será consolidado após terminar as rodadas e revisar correção, variabilidade e planos SQL. Nenhum índice, trigger ou coletor de produção é alterado automaticamente por esses testes.
+O plano posterior a 002/003 já está consolidado. Nenhum índice, trigger ou coletor de produção é alterado automaticamente por esses testes.
 
 A matriz ampliada e a extensão podem produzir evidência de limite operacional de população. Um ponto interrompido por orçamento deve ser registrado como incompleto, com custo/entradas observados e auditoria, sem inventar throughput ou extrapolar resultados inexistentes.
 

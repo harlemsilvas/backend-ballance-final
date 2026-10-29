@@ -1,12 +1,32 @@
-# Decisões de engenharia para estudo
+# Decisões de negócio e engenharia — solução implementada
 
-Este documento explica o desenho e o que já foi comprovado. O enunciado integral está em [CHALLENGE.md](CHALLENGE.md), o setup atual no [README](../README.md) e a arquitetura em [ARCHITECTURE.md](../ARCHITECTURE.md). Resultados numéricos nas seções registram as respectivas etapas históricas; o consolidado está em PROJECT_STATUS.md. Nenhuma decisão proposta equivale a uma garantia implementada.
+Revisão documental em **28/10/2026**. Este documento descreve a solução implementada e as interpretações adotadas para os pontos deixados em aberto pelo [enunciado](CHALLENGE.md). Setup no [README](../README.md), desenho em [ARCHITECTURE.md](../ARCHITECTURE.md) e evidências históricas em [PROJECT_STATUS.md](../PROJECT_STATUS.md).
+
+O repositório completo teve validação registrada de **205 testes/819 assertions**. O pacote essencial exclui os dois controles específicos do runner de carga e teve **203 testes/799 assertions**, além de typecheck, build, smoke e stop/up aprovados. Esses números são registros anteriores; a revisão deste documento não executou novamente as suítes.
+
+## Interpretações de negócio adotadas
+
+A tabela distingue decisões que detalham o contrato de regras já exigidas. Nenhuma interpretação abaixo autoriza ignorar saldo não negativo, idempotência ou auditoria.
+
+| Ponto do desafio | Solução tomada e motivo | Implementação e evidência |
+| --- | --- | --- |
+| LOSS sem efeito no saldo | Exigir `money.amount = "0.00"`. A perda registra o resultado; o débito ocorreu no BET. Evita atribuir outro movimento monetário à perda. | [WagerTransaction](../src/domain/wager-transaction.ts); [testes dos casos de uso](../tests/integration/financial-use-cases.test.ts), cenário `LOSS produces processed event without changing balance, ledger or version`. |
+| WIN pode referenciar BET | Permitir prêmio diferente do valor da aposta; igualdade de valor é exigida para REFUND/ROLLBACK. O valor do WIN é o crédito solicitado, sem somar automaticamente a aposta original. | [Domínio](../src/domain/wager-transaction.ts); [teste](../tests/unit/wager-transaction.test.ts), `WIN can reference BET with a different payout amount`. |
+| Reversão uma vez por tipo | Unicidade por `(reference_transaction_id, kind)` para reversões processadas. Um REFUND e um ROLLBACK da mesma BET podem coexistir, seguindo a regra por tipo do enunciado; não se acrescentou uma proibição global entre os dois tipos. As implicações financeiras exigem alinhamento antes de uso em produção. | [Migration inicial](../src/infrastructure/persistence/migrations/Migration202610260001FinancialSchema.ts), índice `successful_reversal_once`; [teste SQL](../tests/integration/financial-schema.test.ts), `full reversal once per type; different reversal types remain permitted by specification`. |
+| Moeda única permitida | Contratos públicos aceitam somente BRL para reduzir escopo. Money continua distinguindo moedas e rejeitando operações entre moedas incompatíveis. Formato de três letras não equivale a consultar catálogo ISO-4217. | [Preparação do comando](../src/application/wager-request.ts), [Money](../src/domain/money.ts), [contratos](CONTRACTS.md). |
+| Representação e capacidade monetária | Normalizar `"1.2"` para `"1.20"`; rejeitar `"1.234"`, sem arredondamento. Limite de magnitude `999999999999999999.99`. Crédito que ultrapassa o saldo suportado gera rejeição `BALANCE_LIMIT_EXCEEDED`, sem lançamento. | [Money](../src/domain/money.ts), [caso de uso](../src/application/financial-use-cases.ts), [migration da taxonomia](../src/infrastructure/persistence/migrations/Migration202610260002BalanceLimit.ts); [testes de Money](../tests/unit/money.test.ts) e casos de uso. |
+| Política de espera por referência | TTL de 24h desde a aceitação; backoff exponencial com base de 1s, jitter e teto de 5min. Se a referência continua ausente/pendente na avaliação após o prazo, rejeitar com `REFERENCE_EXPIRED`. Uma referência já processável segue as regras de domínio: TTL não é cancelamento automático de toda pendência. | [Caso de uso](../src/application/financial-use-cases.ts), [scheduler](REFERENCE_SCHEDULER.md), [testes](../tests/integration/reference-scheduler.test.ts). |
+| Taxonomia de rejeição | Códigos estáveis distinguem saldo de aposta, saldo para reversão, referência, limite monetário e falha permanente. Erro transitório não vira rejeição financeira fictícia. A tabela pública inclui também erros anteriores à aceitação, retornados como `code`, não necessariamente `failureCode`. | [Taxonomia e ações](CONTRACTS.md#taxonomia-inicial), [contrato HTTP](HTTP_API.md#contratos-e-erros), tipos `RejectionCode`/`FailureCode` no domínio. |
+| Carteira inexistente | Recusar antes da aceitação, HTTP 404; não criar transação financeira com FK apontando para carteira inexistente. | [Casos de uso](../src/application/financial-use-cases.ts), [contratos](CONTRACTS.md), [testes HTTP](../tests/integration/financial-http.test.ts). |
+| Resultado por rodada | Não impor unicidade geral de WIN/LOSS por rodada: o desafio estabelece identidades por operação e não define essa restrição adicional. Cada identidade financeira continua protegida contra repetição. | [Schema](FINANCIAL_SCHEMA.md) e [arquitetura](../ARCHITECTURE.md). |
+
+Saldo nunca negativo, reversão integral, identidade da referência, estados terminais e replay com resultado original são **exigências preservadas**, detalhadas nas decisões seguintes. Locks, retries SQL e leases são soluções técnicas para atendê-las, não novas permissões de negócio.
 
 ## 1. Testes acompanham a implementação
 
 **Decisão implementada:** domínio com testes unitários desde o início; infraestrutura com PostgreSQL e LocalStack reais. Evita descobrir erros de escala, aritmética ou transição somente depois de conectar os workers. Mocks não provariam locks, constraints nem redrive do broker.
 
-**Evidência:** Money, Wallet, ledger e WagerTransaction testados; suíte de infraestrutura com rollback e DLQ reais no emulador. **Limite:** nenhuma dessas provas substitui testes financeiros multiprocesso. Comandos em MANUAL_TESTS.md.
+**Evidência:** Money, Wallet, ledger e WagerTransaction testados; suíte de infraestrutura com rollback e DLQ reais no emulador. **Limite:** unidade/infraestrutura não substituem concorrência real. A suíte financeira também inclui três processos Bun independentes e barreira de início; mensageria inclui processos mortos em janelas controladas. Comandos em [MANUAL_TESTS.md](MANUAL_TESTS.md).
 
 ## 2. Money é um valor exato e imutável
 
@@ -14,7 +34,7 @@ Este documento explica o desenho e o que já foi comprovado. O enunciado integra
 
 **Alternativa:** centavos em bigint também dariam precisão exata, com mapeamento explícito. Decimal foi escolhido pela proximidade com os contratos e PostgreSQL. **Custo:** cuidar da precisão configurada e impedir conversão do driver para number. Código numérico de porta/versão/timestamp não representa dinheiro.
 
-**Atualizado:** Money.rehydrate assinado implementado; preparação pública aceita BRL. Money valida formato de moeda, sem catálogo completo ISO-4217.
+**Implementado:** Money.rehydrate assinado; preparação pública aceita BRL. Money valida formato de moeda, sem catálogo completo ISO-4217.
 
 ## 3. Domínio separado do framework e banco
 
@@ -61,7 +81,7 @@ Reagendar PENDING_REFERENCE mantém o estado; não representa uma nova aceitaç�
 
 **Implementado:** pessimistic lock de linha no PostgreSQL, sem lock global. Após o lock, validar saldo e atualizar wallet/ledger/transação/inbox/outbox em uma transação. Wallets diferentes podem avançar em paralelo; uma wallet muito disputada serializa e pode aumentar latência.
 
-**Alternativas:** optimistic locking com retry ou update condicionado. São válidas, mas exigem tratamento adicional de conflito. **Atualizado:** implementação e provas com três processos, 50 duplicatas e duas BET de 80 sobre saldo 100 concluídas. FIFO sozinho não protege o endpoint HTTP nem substitui constraints.
+**Alternativas:** optimistic locking com retry ou update condicionado. São válidas, mas exigem tratamento adicional de conflito. **Evidência:** implementação e provas com três processos, 50 duplicatas e duas BET de 80 sobre saldo 100 concluídas. FIFO sozinho não protege o endpoint HTTP nem substitui constraints.
 
 ## 8. Inbox e outbox dão recuperação sem prometer publicação única
 
@@ -75,13 +95,13 @@ Se o processo morrer depois de publicar e antes de marcar publishedAt, outra ins
 
 **Implementado:** MikroORM 6.6.17 com conexão explícita e runner up/down/pending; teste up/down/up com migration de prova em schema único. Sem schema sync automático no startup da aplicação. **Custo:** DDL, índices e triggers exigem revisão e testes próprios.
 
-**Atualizado:** migration financeira real e permissões/constraints já validadas em schema isolado. Runtime restrito foi provisionado em projeto Compose isolado; public e ambiente de desenvolvimento original foram preservados. Reversibilidade de uma migration vazia de negócio não prova rollback seguro de dados históricos; produção exigiria plano e backup adequado.
+**Implementado:** migration financeira real e permissões/constraints já validadas em schema isolado. Runtime restrito foi provisionado em projeto Compose isolado; public e ambiente de desenvolvimento original foram preservados. Reversibilidade de uma migration vazia de negócio não prova rollback seguro de dados históricos; produção exigiria plano e backup adequado.
 
 ## 10. Escopo de entrega
 
-**Decisão:** IdP, dashboard, double-entry e carga permanecem fora da implementação; requisitos obrigatórios e entrega local foram concluídos. O ledger solicitado é de entradas de débito/crédito por wallet; não anunciar partidas dobradas. Autenticação adiada exige extensão explícita e uso local documentado quando implementada.
+**Solução entregue:** requisitos obrigatórios e runtime local concluídos. Autenticação externa permanece somente documentada, conforme permitido pelo desafio e decidido pelo usuário. Dashboard, OTel e contabilidade de partidas dobradas não foram implementados. O ledger entregue contém débitos/créditos por wallet. O runner exploratório de carga foi implementado separadamente; não integra o runtime de produção nem o pacote essencial.
 
-O plano é sequencial e não tem datas definidas. Não há evidência para estimar throughput ou declarar correção distribuída completa. PROJECT_STATUS.md registra exatamente o que foi executado.
+**Evidência e limite:** há testes de correção entre processos e medições exploratórias locais, sem demonstração de capacidade de produção ou alta disponibilidade. [PROJECT_STATUS.md](../PROJECT_STATUS.md) registra a execução. A seção 18 consolida os experimentos e a entrega reproduzível.
 
 
 ## 11. Eventos como snapshots e hash como contrato estável
@@ -92,20 +112,20 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Alternativas e custo:** usar canonicalização genérica como RFC 8785 traria uma especificação mais ampla. O contrato atual só contém strings/objetos e usa algoritmo restrito documentado, com vetor conhecido independente. Mudar normalização após persistir hashes exige compatibilidade explícita. Eventos copiados/congelados custam alocação, em troca de impedir que alterações posteriores na entidade mudem payloads já produzidos.
 
-**Atualizado:** chaves e envelopes persistidos no commit financeiro; adaptação HTTP/SQS implementada. Detalhes, exemplos e limites em [EVENTS_AND_HASH.md](EVENTS_AND_HASH.md).
+**Implementado:** chaves e envelopes persistidos no commit financeiro; adaptação HTTP/SQS implementada. Detalhes, exemplos e limites em [EVENTS_AND_HASH.md](EVENTS_AND_HASH.md).
 
 
 ## 12. Schema, precisão e garantias no commit
 
-**Implementado e testado:** cinco tabelas, numeric exato com CHECKs, mapeadores, FKs/UNIQUE e triggers de consistência adiados até o commit. Conferir saldo agregado não basta: validar também cadeia dos saldos intermediários, versão e correspondência de cada operação com seu lançamento.
+**Implementado e testado:** seis tabelas da aplicação (wallets, wager_transactions, wallet_ledger, inbox_messages, outbox_messages e reference_jobs), mais o histórico de migrations do MikroORM; numeric exato com CHECKs, mapeadores, FKs/UNIQUE e triggers de consistência adiados até o commit. Conferir saldo agregado não basta: validar também cadeia dos saldos intermediários, versão e correspondência de cada operação com seu lançamento.
 
 **Mudança da proposta inicial:** numeric(20,2) arredondaria entradas com mais casas antes do CHECK. Numeric sem typmod com scale <= 2 e magnitude limitada rejeita escala excedente sem arredondamento. Leitura do driver normaliza somente strings válidas; números JS são rejeitados. [Motivo e referência oficial](FINANCIAL_SCHEMA.md).
 
-**Trade-off:** agregação/janela por wallet a cada disparo custa mais conforme o ledger cresce. Nenhuma meta de throughput foi medida; correção vem primeiro. Locks do schema serializam a wallet; casos de uso implementados seguem wallet antes de reservar transação. A sequência anterior foi revista antes de existir serviço financeiro.
+**Trade-off:** agregação/janela por wallet a cada disparo custa mais conforme o ledger cresce. Foram realizadas medições exploratórias locais; nenhuma capacidade de produção foi estabelecida. Locks do schema serializam a wallet; casos de uso implementados seguem wallet antes de reservar transação. A sequência anterior foi revista antes de existir serviço financeiro.
 
 **Permissões:** grants para papel não proprietário e triggers complementam a imutabilidade. Conta administrativa do Compose fica no provisionador; API/workers usam papel restrito provisionado no schema financial da stack isolada de entrega. Public e dados do ambiente de desenvolvimento original foram preservados.
 
-**Limite:** schema não sabe se result_snapshot contém a resposta HTTP correta ou se o publisher publicou depois do commit. Esses comportamentos continuam responsabilidades do caso de uso e dos workers, com testes específicos por implementar.
+**Limite:** schema não sabe se result_snapshot contém a resposta HTTP correta ou se o publisher publicou depois do commit. Esses comportamentos são responsabilidades dos casos de uso e workers; testes de snapshot/replay e de publicação/recuperação já os exercitam.
 
 
 ## 13. Unidade transacional e replay histórico
@@ -116,7 +136,7 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Mudança de taxonomia:** BALANCE_LIMIT_EXCEEDED impede tratar crédito acima da capacidade como falha inesperada. Nova migration estende o CHECK sem editar a primeira. Rollback que invalidaria auditoria é recusado, nunca apaga dados para concluir.
 
-**Evidências:** 50 duplicatas, duas BETs disputando saldo, lock de wallet independente e três processos Bun com barreira de início. Replay histórico foi conferido em processos novos após outros movimentos. Nenhum benchmark foi feito.
+**Evidências:** 50 duplicatas, duas BETs disputando saldo, lock de wallet independente e três processos Bun com barreira de início. Replay histórico foi conferido em processos novos após outros movimentos. Experimentos exploratórios de carga também foram executados posteriormente, com limites descritos na seção 18.
 
 **Implementado nas etapas seguintes:** integração HTTP/workers, inbox na mesma sessão, publicação com lease, crash entre commit/ack e publishers concorrentes. Resume é a entrada chamada pelo scheduler automático. [Detalhes e comandos](FINANCIAL_PROCESSING.md).
 
@@ -131,7 +151,7 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Startup:** rotas financeiras exigem ativação explícita, schema migrado e papel não proprietário/administrativo. Não criar usuários ou migrar no startup. Testes usam papel/schema temporários; runtime persistente foi validado no projeto Compose isolado, via provisionador separado.
 
-**Evidência:** 14 testes HTTP, inclusive microssegundos, concorrência com reconciliação e falha transitória simulada sem parar containers. Suíte completa: 163 testes/589 assertions. [Guia HTTP e comandos](HTTP_API.md).
+**Evidência:** testes HTTP incluem microssegundos, concorrência com reconciliação e falha transitória simulada sem parar containers. O registro de 163 testes/589 assertions pertence à etapa histórica de implementação HTTP; os totais consolidados estão na abertura deste documento. [Guia HTTP e comandos](HTTP_API.md).
 
 
 ## 15. Inbox na mesma sessão e leases com token
@@ -146,7 +166,7 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 
 **Shutdown:** drenar até prazo; ao expirar, devolver visibilidade/posse e impedir ack/marcação tardios. Coordenar heartbeat em andamento evita cancelar a liberação com renovação atrasada.
 
-**Evidências:** 17 testes novos, com SIGKILL real após commit/antes de ack e após envio/antes de marcação. Suíte total 180 testes/680 assertions. Scheduler automático, métricas obrigatórias e preparação operacional foram concluídos nas etapas seguintes; ver REFERENCE_SCHEDULER.md, OBSERVABILITY.md e DELIVERY.md. [Guia e comandos](MESSAGING.md).
+**Evidências:** testes com SIGKILL real após commit/antes de ack e após envio/antes de marcação. O registro de 180 testes/680 assertions pertence à etapa histórica de mensageria; não é o total atual. Scheduler automático, métricas obrigatórias e preparação operacional foram concluídos nas etapas seguintes; ver REFERENCE_SCHEDULER.md, OBSERVABILITY.md e DELIVERY.md. [Guia e comandos](MESSAGING.md).
 
 
 ## 16. Scheduler sem inversão de locks
@@ -166,3 +186,16 @@ O plano é sequencial e não tem datas definidas. Não há evidência para estim
 **Trade-off:** agregações SQL custam leitura por scrape e registry local reseta. Não usar telemetria como ledger nem dedup. A implementação Prometheus específica evita dependência adicional e tem testes de cardinalidade/formato. OTel/dashboard continuam opcionais.
 
 **Evidências:** timeout real de lock e retry, métricas de entrega com SQS, coleta após registry novo, fonte indisponível, endpoints e logs sem payload financeiro. [Guia](OBSERVABILITY.md).
+
+
+## 18. Experimentos e entrega reproduzível concluídos
+
+**Medição implementada:** runner separado em `scripts/load`, com relatórios sequenciais e fontes/configurações preservadas. A rodada 002 concluiu 48 cenários com históricos de 100/1.000 entradas, uma/seis wallets, HTTP/SQS, duas repetições em ordem alternada e coleta off/5s/15s. A rodada 003 tentou 10.000 entradas, mas parou no orçamento de população em 7.977 entradas auditadas, sem janela medida em 10.000. [Índice e resultados](LOAD_RESULTS_INDEX.md).
+
+**Decisão posterior aos testes:** registrar propostas no [plano de melhorias](LOAD_IMPROVEMENT_PLAN.md), sem aplicar automaticamente índice, alteração de trigger, cache ou particionamento. O custo das verificações sobre o histórico é conhecido; a medição não justifica anunciar um limite universal nem capacidade de produção.
+
+**Runtime entregue:** Dockerfile multi-stage, Bun/dependências exatos e imagens de origem fixadas por tag/digest. Compose separa provisionador administrativo de API/worker restritos. O volume PostgreSQL preserva o estado financeiro em stop/up; persistência de mensagens após recriação do LocalStack não foi comprovada. [Imagens](IMAGES.md) e [validação do runtime](DELIVERY.md).
+
+**Pacote essencial:** [gerador](../scripts/package-delivery.py) e [templates](../scripts/delivery/README.md) produzem pasta/ZIP sem estudos, credenciais ou dependências instaladas. A infraestrutura de testes é independente da demonstração; seu PostgreSQL exige SCRAM nas conexões de rede. O destinatário precisa de Docker/Compose e internet no primeiro build, sem Bun/Node no host. O pacote não é instalador offline nem configuração de produção.
+
+**Evidência:** suíte essencial de 203 testes aprovada, smoke HTTP/replay/SQS/publicação/reconciliação/métricas e stop/up com saldo 85.00 BRL preservado. [Registro da edição essencial](../scripts/delivery/VALIDACAO.md). A suíte ampliada do repositório tem 205 testes, incluindo dois controles adicionais do runner de carga. Esses resultados anteriores não foram repetidos nesta revisão documental.

@@ -1,5 +1,15 @@
 # Entrega local e validação — 26/10/2026
 
+## Política após a submissão — 28/10/2026
+
+Por instrução explícita do autor, a branch `main` entregue em https://github.com/harlemsilvas/backend-ballance-jungle fica preservada na referência `22d06c6`. Não adicionar documentos, implementar melhorias ou fazer correções diretamente nessa branch, inclusive alterações apenas editoriais.
+
+Os próximos desenvolvimentos, estudos, revisões e testes devem ocorrer neste repositório de desenvolvimento: https://github.com/harlemsilvas/backend-ballance-final (workspace backend-challenge). A pasta local `avaliacao/` possui Git próprio e representa a entrega; não usá-la como ambiente de evolução automática.
+
+Somente quando houver necessidade de atualizar a entrega, registrar a proposta em uma issue e/ou preparar uma branch com PR no repositório de avaliação, com motivação, escopo e evidências de validação. Issue registra a proposta; alteração de código ou documentação deve passar por PR. Não fazer push direto na main nem merge automático. Esta política não autoriza abrir issues/PRs ou publicar mudanças por iniciativa própria; essas ações dependem da solicitação correspondente. A aprovação anterior de publicação não autoriza novas alterações diretas na branch entregue.
+
+O roteiro local [FEATURES_PROXIMA_VERSAO.md](FEATURES_PROXIMA_VERSAO.md) orienta a próxima análise e não integra a submissão. Registrar propostas como propostas; não apresentar melhorias futuras como já implementadas na entrega.
+
 A entrega usa Dockerfile multi-stage, dependências exatas/lockfile, usuário bun e overlay `compose.app.yaml`. O [README](../README.md) contém o setup. A [orientação oficial do Bun para Docker](https://bun.sh/guides/ecosystem/docker) fundamenta o build com instalação congelada; o [formato das URLs SQS do LocalStack](https://docs.localstack.cloud/aws/services/sqs/) fundamenta SQS_ENDPOINT_STRATEGY=path e o endpoint interno localstack:4566.
 
 ## Validação executada

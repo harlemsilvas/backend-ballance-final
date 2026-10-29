@@ -1,6 +1,6 @@
 # Arquitetura — Backend Ballance
 
-Estado em 26/10/2026: domínio, persistência financeira, HTTP, SQS/inbox/outbox, scheduler e observabilidade obrigatória implementados e testados. Runtime restrito e entrega Docker Compose validados em projeto/volume isolados. O [enunciado original](docs/CHALLENGE.md) é a referência dos requisitos; [PROJECT_STATUS.md](PROJECT_STATUS.md) registra validações e histórico. IdP real, OTel e dashboard permanecem fora da implementação; os experimentos de carga estão no [índice sequencial](docs/LOAD_RESULTS_INDEX.md), sem estimativa de capacidade de produção.
+Estado em 29/10/2026: domínio, persistência financeira, HTTP, SQS/inbox/outbox, scheduler e observabilidade obrigatória implementados e testados. Runtime restrito e entrega Docker Compose validados em projeto/volume isolados. O [enunciado original](docs/CHALLENGE.md) é a referência dos requisitos; [PROJECT_STATUS.md](PROJECT_STATUS.md) registra validações e histórico. IdP real, OTel e dashboard permanecem fora da implementação; os experimentos de carga estão no [índice sequencial](docs/LOAD_RESULTS_INDEX.md), sem estimativa de capacidade de produção.
 
 ## Estrutura e limites
 

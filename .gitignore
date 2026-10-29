@@ -17,3 +17,14 @@ ESTUDO_*.md
 # Artefatos gerados por scripts/package-delivery.py
 /entrega/
 /entrega.zip
+
+# Coleções pessoais do guia de estudo Postman
+/docs/estudo-postman/
+
+# Edição experimental e resultados locais
+/entrega_teste/
+/entrega_teste.zip
+/reports/
+
+# Candidata independente para revisão antes da publicação
+/avaliacao/

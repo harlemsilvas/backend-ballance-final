@@ -101,3 +101,19 @@ Os experimentos 002 e 003 têm fontes/configurações selecionadas preservadas e
 Isso preserva a versão do runner mesmo com o worktree ainda sem commit. O código financeiro é o mesmo nos dois experimentos; a versão 003 acrescenta ANALYZE/sondas SELECT ao diagnóstico de população interrompida e esclarece o texto do relatório para perfis focados. Esse diagnóstico ocorre depois de capturar o tempo ao atingir o limite e tem duração registrada separadamente, sem virar uma janela financeira medida. O bundle não promete repetir exatamente tempos, UUIDs ou estados de cache.
 
 A primeira matriz ampliada (002) terminou com 48 cenários, duas repetições contrabalanceadas, 17.280 operações e 109.968 lançamentos auditados. O perfil 003 mira 10.000 entradas numa única wallet, HTTP, 720 comandos e coleta off/5s, em uma repetição de viabilidade; ele não substitui a matriz contrabalanceada nem testa seis wallets com 10.000 entradas. O limite é de dez minutos de população por ponto, sem relaxar invariantes.
+
+
+## Perfis nomeados: diagnóstico 3.000 e comparação de volume
+
+Além do runner genérico `bun run test:load` (default de histórico 100/1.000), há dois atalhos opcionais:
+
+- `bun run test:load3000`: força histórico 3.000, hot/HTTP, 120 comandos/caso, uma repetição e coleta off/5s por padrão. É diagnóstico, não A/B com rodadas históricas.
+- `bun run test:load:volume`: históricos 100/1.000/3.000, mesmos comandos/transporte/distribuição, duas repetições e coleta off/5s. São 12 casos e 1.440 comandos medidos se concluir.
+
+Ambos usam três processos, concorrência seis e orçamento padrão de 180.000ms por população de caso. O perfil recusa histórico conflitante e orçamento nulo; o runner mantém a exigência de alvo local isolado. Overrides de outros parâmetros continuam sujeitos às validações existentes. O limite não inclui toda a matriz/startup/carga/diagnóstico, e um orçamento excedido não vira throughput zero.
+
+`--describe` imprime apenas a configuração do perfil, sem abrir banco/fila nem iniciar carga. Os perfis não alteram os defaults do runner genérico. Use `bun run test:load3000` ou `bun run test:load:volume` com infraestrutura exclusiva.
+
+Histórico é quantidade inicial de lançamentos por carteira, incluindo OPENING, não usuários, operações simultâneas ou só tamanho do arquivo. Aquecimento e comandos medidos acrescentam histórico. A comparação fixa o perfil para variar esse tamanho, com repetição invertida; continua sendo experimento local, não prova de capacidade universal.
+
+Estado: configuração/preview e testes unitários conferidos; o comparativo de 3.000 ainda não tem rodada medida. Quando executado e revisado, registrar o próximo RESULTS sequencial (004), sem sobrescrever os anteriores ou misturar percentis de protocolos diferentes. Não escolher o volume para obter um número mais atraente nem desativar constraints para completar a população.
